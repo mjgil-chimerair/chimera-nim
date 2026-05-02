@@ -1,0 +1,10 @@
+# Cargo configuration for rustnim
+# Optional performance settings - only enable if you have these tools installed
+# Uncomment the sections you need
+
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+
+# [build]
+# rustc-wrapper = "sccache"
