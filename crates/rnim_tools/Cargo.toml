@@ -1,0 +1,16 @@
+[package]
+name = "rnim_tools"
+edition = "2021"
+version = "0.1.0"
+description = "Shared utilities for formatter, minimizer, snapshot updater, coverage utilities"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+similar = { workspace = true }
+walkdir = { workspace = true }
+rnim_span = { path = "../rnim_span" }
+rnim_parser = { path = "../rnim_parser" }
