@@ -1,0 +1,14 @@
+[package]
+name = "rnim_build"
+edition = "2021"
+version = "0.1.0"
+description = "Build and link orchestration, compile plan generation, external compiler detection, object cache"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+rnim_span = { path = "../rnim_span" }
+camino = "1.1"
