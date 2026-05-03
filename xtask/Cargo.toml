@@ -1,0 +1,13 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2021"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+cargo-util = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
