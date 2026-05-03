@@ -1,0 +1,18 @@
+[package]
+name = "rnim_runtime"
+edition = "2021"
+version = "0.1.0"
+description = "Runtime support for strings, seqs, refs, exceptions, threads, async hooks, ARC/ORC cycle handling"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[lints.rust]
+unsafe_code = "allow"
+dead_code = "warn"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+parking_lot = { workspace = true }
+once_cell = { workspace = true }
