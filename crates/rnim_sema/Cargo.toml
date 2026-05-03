@@ -1,0 +1,18 @@
+[package]
+name = "rnim_sema"
+edition = "2021"
+version = "0.1.0"
+description = "Semantic analysis, overload resolution, type checking, constant rules, routine checking"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+salsa = { workspace = true }
+petgraph = { workspace = true }
+rnim_span = { path = "../rnim_span" }
+rnim_ast = { path = "../rnim_ast" }
+rnim_hir = { path = "../rnim_hir" }
+rnim_types = { path = "../rnim_types" }
