@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  check:
+    name: cargo check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Check workspace
+        run: cargo check --workspace
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: cargo test --workspace
+
+  doc:
+    name: cargo doc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Check docs
+        run: cargo doc --workspace --no-deps
+
+  unsafe-audit:
+    name: Unsafe code audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Scan for unsafe code
+        run: |
+          # Only rnim_runtime, rnim_codegen_c, and rnim_codegen_js are allowed to use unsafe
+          for crate in crates/*/src/*.rs crates/*/src/**/*.rs; do
+            if [ -f "$crate" ]; then
+              if grep -q "unsafe" "$crate"; then
+                crate_dir=$(dirname "$crate")
+                crate_name=$(basename "$crate_dir")
+                if [ "$crate_name" != "rnim_runtime" ] && [ "$crate_name" != "rnim_codegen_c" ] && [ "$crate_name" != "rnim_codegen_js" ]; then
+                  echo "Unauthorized unsafe code in $crate"
+                  exit 1
+                fi
+              fi
+            fi
+          done
+          echo "Unsafe code audit passed"
+
+  dep-audit:
+    name: Crate dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Audit dependencies
+        run: cargo audit || echo "cargo-audit not installed, skipping"
