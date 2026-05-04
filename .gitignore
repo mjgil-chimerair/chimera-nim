@@ -1,0 +1,10 @@
+target/
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+repomix-output.xml
