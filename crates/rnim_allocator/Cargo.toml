@@ -1,0 +1,9 @@
+[package]
+name = "rnim_allocator"
+version = "0.1.0"
+edition = "2021"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dependencies]
+cap = "0.1"
