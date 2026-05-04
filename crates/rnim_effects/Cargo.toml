@@ -1,0 +1,16 @@
+[package]
+name = "rnim_effects"
+edition = "2021"
+version = "0.1.0"
+description = "Exception/effect tracking, tags, `raises`, `gcsafe`, side-effect validation"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+smallvec = { workspace = true }
+bitflags = { workspace = true }
+rnim_span = { path = "../rnim_span" }
+rnim_hir = { path = "../rnim_hir" }
