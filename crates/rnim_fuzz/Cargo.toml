@@ -1,0 +1,15 @@
+[package]
+name = "rnim_fuzz"
+edition = "2021"
+version = "0.1.0"
+description = "Fuzzing targets for lexer/parser/sema/codegen"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+arbitrary = { version = "1.0", features = ["derive"] }
+rnim_lexer = { path = "../rnim_lexer" }
+rnim_parser = { path = "../rnim_parser" }
