@@ -1,0 +1,17 @@
+[package]
+name = "rnim_hir"
+edition = "2021"
+version = "0.1.0"
+description = "Resolved high-level IR after name lookup, desugaring, hygiene, and early semantic passes"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+salsa = { workspace = true }
+rustc-hash = { workspace = true }
+rnim_span = { path = "../rnim_span" }
+rnim_ast = { path = "../rnim_ast" }
+rnim_symbols = { path = "../rnim_symbols" }
