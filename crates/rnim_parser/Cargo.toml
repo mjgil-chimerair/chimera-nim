@@ -1,0 +1,18 @@
+[package]
+name = "rnim_parser"
+edition = "2021"
+version = "0.1.0"
+description = "Lossless parser for modules, statements, expressions, pragmas, command syntax, and error recovery"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+rowan = { workspace = true }
+bumpalo = { workspace = true }
+rnim_span = { path = "../rnim_span" }
+rnim_lexer = { path = "../rnim_lexer" }
+rnim_diag = { path = "../rnim_diag" }
+thiserror = { workspace = true }
