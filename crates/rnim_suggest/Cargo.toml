@@ -1,0 +1,17 @@
+[package]
+name = "rnim_suggest"
+edition = "2021"
+version = "0.1.0"
+description = "Nimsuggest-compatible query server and LSP bridge"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+rnim_session = { path = "../rnim_session" }
+rnim_lexer = { path = "../rnim_lexer" }
+rnim_parser = { path = "../rnim_parser" }
+rnim_ast = { path = "../rnim_ast" }
+rnim_sema = { path = "../rnim_sema" }
