@@ -1,0 +1,15 @@
+[package]
+name = "rnim_macro"
+edition = "2021"
+version = "0.1.0"
+description = "Template and macro expansion, hygienic symbol handling, Nim AST macro API model"
+license = "0BSD"
+repository = "https://github.com/chimera-nim/chimera-nim"
+
+[dev-dependencies]
+rnim_allocator = { path = "../rnim_allocator" }
+
+[dependencies]
+rnim_ast = { path = "../rnim_ast" }
+rnim_vm = { path = "../rnim_vm" }
+rnim_span = { path = "../rnim_span" }
