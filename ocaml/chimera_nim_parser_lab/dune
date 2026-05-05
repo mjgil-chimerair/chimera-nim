@@ -1,0 +1,17 @@
+(library
+ (name chimera_nim_parser_lab)
+ (public_name chimera_nim_parser_lab)
+ (synopsis "Parser prototype for Nim in OCaml")
+ (modules parser_lab))
+
+(rule
+ (targets tokens.ml)
+ (deps tokens.mll)
+ (action
+  (run ocamllex tokens.mll -o tokens.ml)))
+
+(rule
+ (targets parser.ml)
+ (deps parser.mly)
+ (action
+  (run ocamlyacc parser.mly -o parser.ml)))

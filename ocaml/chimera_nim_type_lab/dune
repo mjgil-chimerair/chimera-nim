@@ -1,0 +1,7 @@
+(library
+ (name chimera_nim_type_lab)
+ (public_name chimera_nim_type_lab)
+ (synopsis "Type inference prototype for Nim in OCaml")
+ (modules type_lab))
+
+let () = print_endline "Type lab placeholder"

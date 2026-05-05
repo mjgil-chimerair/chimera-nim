@@ -1,0 +1,25 @@
+(lang dune 3.0)
+
+(name chimera_nim)
+
+(version 0.1.0)
+
+(package
+ (name chimera_nim_parser_lab)
+ (synopsis "Parser prototype for Nim in OCaml")
+ (description "An OCaml implementation of a Nim parser prototype for comparison with the Rust parser"))
+
+(package
+ (name chimera_nim_type_lab)
+ (synopsis "Type inference prototype for Nim in OCaml")
+ (description "An OCaml implementation of Nim type inference for oracle comparison"))
+
+(package
+ (name chimera_nim_macro_lab)
+ (synopsis "Macro expansion prototype for Nim in OCaml")
+ (description "An OCaml implementation of Nim macro expansion modeling"))
+
+(package
+ (name chimera_nim_concept_lab)
+ (synopsis "Concept solving prototype for Nim in OCaml")
+ (description "An OCaml implementation of Nim concept constraint solving"))

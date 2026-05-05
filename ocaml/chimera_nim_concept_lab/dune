@@ -1,0 +1,7 @@
+(library
+ (name chimera_nim_concept_lab)
+ (public_name chimera_nim_concept_lab)
+ (synopsis "Concept solving prototype for Nim in OCaml")
+ (modules concept_lab))
+
+let () = print_endline "Concept lab placeholder"

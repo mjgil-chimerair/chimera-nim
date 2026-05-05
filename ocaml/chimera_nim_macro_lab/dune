@@ -1,0 +1,7 @@
+(library
+ (name chimera_nim_macro_lab)
+ (public_name chimera_nim_macro_lab)
+ (synopsis "Macro expansion prototype for Nim in OCaml")
+ (modules macro_lab))
+
+let () = print_endline "Macro lab placeholder"
