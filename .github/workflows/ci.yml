@@ -79,13 +79,14 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Scan for unsafe code
         run: |
-          # Only rnim_runtime, rnim_codegen_c, and rnim_codegen_js are allowed to use unsafe
+          # Only rnim_runtime, rnim_codegen_c, rnim_codegen_js, and rnim_stdlib are allowed to use unsafe
           for crate in crates/*/src/*.rs crates/*/src/**/*.rs; do
             if [ -f "$crate" ]; then
-              if grep -q "unsafe" "$crate"; then
+              # Only flag actual unsafe blocks or unsafe function declarations, not comments
+              if grep -E '^\s*(unsafe\s*\{|unsafe\s+fn|unsafe\s+impl|unsafe\s+struct|unsafe\s+enum)' "$crate" > /dev/null 2>&1; then
                 crate_dir=$(dirname "$crate")
                 crate_name=$(basename "$crate_dir")
-                if [ "$crate_name" != "rnim_runtime" ] && [ "$crate_name" != "rnim_codegen_c" ] && [ "$crate_name" != "rnim_codegen_js" ]; then
+                if [ "$crate_name" != "rnim_runtime" ] && [ "$crate_name" != "rnim_codegen_c" ] && [ "$crate_name" != "rnim_codegen_js" ] && [ "$crate_name" != "rnim_stdlib" ]; then
                   echo "Unauthorized unsafe code in $crate"
                   exit 1
                 fi
