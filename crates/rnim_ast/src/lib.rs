@@ -418,8 +418,8 @@ mod tests {
 
     #[test]
     fn test_ast_node_hash() {
-        use std::hash::{Hash, Hasher};
         use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
 
         let node = AstNode {
             kind: "proc",

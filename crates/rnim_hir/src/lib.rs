@@ -679,7 +679,13 @@ mod tests {
             }),
             span: Span::new(FileId::new(0), 0, 3),
         };
-        assert!(matches!(expr, HirExpr::Binary { op: HirBinOp::Add, .. }));
+        assert!(matches!(
+            expr,
+            HirExpr::Binary {
+                op: HirBinOp::Add,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -692,7 +698,13 @@ mod tests {
             }),
             span: Span::new(FileId::new(0), 0, 2),
         };
-        assert!(matches!(expr, HirExpr::Unary { op: HirUnOp::Neg, .. }));
+        assert!(matches!(
+            expr,
+            HirExpr::Unary {
+                op: HirUnOp::Neg,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -896,7 +908,13 @@ mod tests {
             ty: HirType::Float,
             span: Span::new(FileId::new(0), 0, 8),
         };
-        assert!(matches!(expr, HirExpr::Cast { ty: HirType::Float, .. }));
+        assert!(matches!(
+            expr,
+            HirExpr::Cast {
+                ty: HirType::Float,
+                ..
+            }
+        ));
     }
 
     #[test]

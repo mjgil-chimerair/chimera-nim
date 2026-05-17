@@ -375,18 +375,21 @@ mod tests {
     fn test_crash_kind_variants() {
         let panic = CrashKind::Panic("error".to_string());
         assert!(matches!(panic, CrashKind::Panic(_)));
-        assert!(matches!(CrashKind::SegmentationFault, CrashKind::SegmentationFault));
+        assert!(matches!(
+            CrashKind::SegmentationFault,
+            CrashKind::SegmentationFault
+        ));
         assert!(matches!(CrashKind::Timeout, CrashKind::Timeout));
         assert!(matches!(CrashKind::OOM, CrashKind::OOM));
-        assert!(matches!(CrashKind::IllegalInstruction, CrashKind::IllegalInstruction));
+        assert!(matches!(
+            CrashKind::IllegalInstruction,
+            CrashKind::IllegalInstruction
+        ));
     }
 
     #[test]
     fn test_corpus_entry_new() {
-        let entry = CorpusEntry::new(
-            PathBuf::from("test.nim"),
-            b"let x = 1".to_vec(),
-        );
+        let entry = CorpusEntry::new(PathBuf::from("test.nim"), b"let x = 1".to_vec());
         assert_eq!(entry.coverage, 0);
         assert_eq!(entry.data, b"let x = 1");
     }

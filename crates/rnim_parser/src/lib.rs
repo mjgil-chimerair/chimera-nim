@@ -1479,7 +1479,7 @@ mod tests {
     fn test_let_declaration() {
         let source = "let x = 1";
         let mut parser = Parser::new(source, FileId(0));
-        let cst = parser.parse_cst();  // Use parse_cst for full token capture
+        let cst = parser.parse_cst(); // Use parse_cst for full token capture
         let syntax_node: rowan::SyntaxNode<RnimLang> = rowan::SyntaxNode::new_root(cst);
         let text = syntax_node.text().to_string();
         assert!(text.contains("let") || text.contains("x"));

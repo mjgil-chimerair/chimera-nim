@@ -770,9 +770,10 @@ mod tests {
 
     #[test]
     fn test_type_implementation_multiple_methods() {
-        let impl_type = TypeImplementation::new("MyType", "Container", Span::new(FileId::new(0), 0, 10))
-            .with_method("foo")
-            .with_method("bar");
+        let impl_type =
+            TypeImplementation::new("MyType", "Container", Span::new(FileId::new(0), 0, 10))
+                .with_method("foo")
+                .with_method("bar");
         assert_eq!(impl_type.methods.len(), 2);
     }
 

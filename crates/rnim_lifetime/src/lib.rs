@@ -717,7 +717,10 @@ mod tests {
     fn test_hook_registry_trace_hook() {
         let mut registry = HookRegistry::new();
         let span = Span::new(FileId(0), 0, 0);
-        registry.register("MyType", HookDef::new(HookKind::Trace, "MyType$trace", span));
+        registry.register(
+            "MyType",
+            HookDef::new(HookKind::Trace, "MyType$trace", span),
+        );
 
         let trace_hook = registry.lookup("MyType", HookKind::Trace);
         assert!(trace_hook.is_some());
@@ -727,7 +730,10 @@ mod tests {
     fn test_hook_registry_dup_hook() {
         let mut registry = HookRegistry::new();
         let span = Span::new(FileId(0), 0, 0);
-        registry.register("RefCounted", HookDef::new(HookKind::Dup, "RefCounted$dup", span));
+        registry.register(
+            "RefCounted",
+            HookDef::new(HookKind::Dup, "RefCounted$dup", span),
+        );
 
         let dup_hook = registry.lookup("RefCounted", HookKind::Dup);
         assert!(dup_hook.is_some());
@@ -752,7 +758,10 @@ mod tests {
         let mut registry = HookRegistry::new();
         let span = Span::new(FileId(0), 0, 0);
         // Register a Trace hook - it marks the type as having custom hooks
-        registry.register("Container", HookDef::new(HookKind::Trace, "Container$trace", span));
+        registry.register(
+            "Container",
+            HookDef::new(HookKind::Trace, "Container$trace", span),
+        );
 
         let resolution = registry.resolve("Container");
         // Container has a custom Trace hook
@@ -778,7 +787,10 @@ mod tests {
         // When a type has custom hooks, resolution should have has_custom = true
         let mut registry = HookRegistry::new();
         let span = Span::new(FileId(0), 0, 0);
-        registry.register("MyType", HookDef::new(HookKind::Destroy, "MyType$destroy", span));
+        registry.register(
+            "MyType",
+            HookDef::new(HookKind::Destroy, "MyType$destroy", span),
+        );
 
         let resolution = registry.resolve("MyType");
         assert!(resolution.has_custom);
@@ -792,11 +804,20 @@ mod tests {
         let span = Span::new(FileId(0), 0, 0);
 
         // Register one of each hook kind
-        registry.register("MyType", HookDef::new(HookKind::Destroy, "MyType$destroy", span));
-        registry.register("MyType", HookDef::new(HookKind::WasMoved, "MyType$wasMoved", span));
+        registry.register(
+            "MyType",
+            HookDef::new(HookKind::Destroy, "MyType$destroy", span),
+        );
+        registry.register(
+            "MyType",
+            HookDef::new(HookKind::WasMoved, "MyType$wasMoved", span),
+        );
         registry.register("MyType", HookDef::new(HookKind::Sink, "MyType$sink", span));
         registry.register("MyType", HookDef::new(HookKind::Copy, "MyType$copy", span));
-        registry.register("MyType", HookDef::new(HookKind::Trace, "MyType$trace", span));
+        registry.register(
+            "MyType",
+            HookDef::new(HookKind::Trace, "MyType$trace", span),
+        );
         registry.register("MyType", HookDef::new(HookKind::Dup, "MyType$dup", span));
 
         let hooks = registry.get_hooks_for_type("MyType");

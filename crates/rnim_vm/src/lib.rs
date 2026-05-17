@@ -1196,7 +1196,9 @@ mod tests {
         let proc_id = vm.new_proc_id();
         let mut proc = VmProc::new(proc_id, "str_concat");
         // String operations are limited - just test with a single string
-        proc.add_opcode(OpCode::PushConst(VmValue::String("Hello World".to_string())));
+        proc.add_opcode(OpCode::PushConst(VmValue::String(
+            "Hello World".to_string(),
+        )));
         proc.add_opcode(OpCode::Return);
         vm.add_proc(proc);
 

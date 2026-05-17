@@ -909,7 +909,11 @@ mod tests {
 
     #[test]
     fn test_infer_error_concept_not_satisfied_display() {
-        let err = InferError::ConceptNotSatisfied("int".into(), "Addable".into(), Span::new(FileId::new(0), 0, 10));
+        let err = InferError::ConceptNotSatisfied(
+            "int".into(),
+            "Addable".into(),
+            Span::new(FileId::new(0), 0, 10),
+        );
         let display = format!("{}", err);
         assert!(display.contains("concept") || display.contains("not satisfy"));
     }

@@ -580,7 +580,10 @@ mod tests {
         ctx.set_symbol("MY_VERSION", DefinedValue::Integer(42));
         // Just test that the symbol is defined with correct value
         assert!(ctx.is_defined("MY_VERSION"));
-        assert_eq!(ctx.get_symbol("MY_VERSION"), Some(&DefinedValue::Integer(42)));
+        assert_eq!(
+            ctx.get_symbol("MY_VERSION"),
+            Some(&DefinedValue::Integer(42))
+        );
     }
 
     #[test]

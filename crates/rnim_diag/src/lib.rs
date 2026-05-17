@@ -629,7 +629,11 @@ mod tests {
     fn test_diagnostic_with_multiple_suggestions() {
         let diag = Diagnostic::error(DiagCode::new(300), "type mismatch")
             .with_suggestion(Span::new(FileId::new(0), 0, 5), "try `int`", Some("int"))
-            .with_suggestion(Span::new(FileId::new(0), 0, 5), "try `float`", Some("float"));
+            .with_suggestion(
+                Span::new(FileId::new(0), 0, 5),
+                "try `float`",
+                Some("float"),
+            );
         assert_eq!(diag.suggestions.len(), 2);
     }
 
@@ -695,12 +699,11 @@ mod tests {
         use std::sync::Arc;
         let sm = Arc::new(SourceMap::new());
         let emitter = Emitter::new(false, false, sm);
-        let diag = Diagnostic::error(DiagCode::new(300), "mismatch")
-            .with_suggestion(
-                Span::new(FileId::new(0), 0, 5),
-                "try this",
-                Some("replacement"),
-            );
+        let diag = Diagnostic::error(DiagCode::new(300), "mismatch").with_suggestion(
+            Span::new(FileId::new(0), 0, 5),
+            "try this",
+            Some("replacement"),
+        );
         emitter.emit(&diag);
     }
 

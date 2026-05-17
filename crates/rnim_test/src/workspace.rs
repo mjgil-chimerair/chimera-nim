@@ -184,6 +184,7 @@ pub fn expected_workspace_members() -> Vec<&'static str> {
         "crates/rnim_tools",
         "crates/rnim_build",
         "crates/rnim_query",
+        "xtask",
     ]
 }
 

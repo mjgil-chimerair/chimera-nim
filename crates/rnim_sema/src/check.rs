@@ -664,9 +664,7 @@ when isMainModule:
 
     #[test]
     fn test_check_diagnostic_related() {
-        let related = vec![
-            Span::new(FileId(0), 5, 10)
-        ];
+        let related = vec![Span::new(FileId(0), 5, 10)];
         let diag = CheckDiagnostic {
             span: Span::new(FileId(0), 0, 5),
             severity: DiagnosticSeverity::Error,

@@ -578,7 +578,9 @@ mod tests {
     fn test_effect_propagation_higher_order() {
         // Higher-order functions should propagate effects
         let mut effects = EffectSet::new();
-        effects.flags.insert(EffectFlags::READS | EffectFlags::WRITES);
+        effects
+            .flags
+            .insert(EffectFlags::READS | EffectFlags::WRITES);
 
         // Combined effects through higher-order calls
         assert!(effects.flags.contains(EffectFlags::READS));
@@ -589,7 +591,9 @@ mod tests {
     fn test_lambda_effect_inference() {
         // Lambda expressions should infer effects from body
         let mut effects = EffectSet::new();
-        effects.flags.insert(EffectFlags::LEAF | EffectFlags::GC_SAFE);
+        effects
+            .flags
+            .insert(EffectFlags::LEAF | EffectFlags::GC_SAFE);
 
         // Leaf lambdas have no side effects
         assert!(effects.flags.contains(EffectFlags::LEAF));
@@ -616,7 +620,9 @@ mod tests {
         caller.add_raise(EffectType::ValueError);
 
         let mut callee = EffectSet::new();
-        callee.flags.insert(EffectFlags::READS | EffectFlags::WRITES);
+        callee
+            .flags
+            .insert(EffectFlags::READS | EffectFlags::WRITES);
         callee.add_raise(EffectType::ValueError);
 
         // Intersection of effects (simplified model)
@@ -664,7 +670,14 @@ mod tests {
     #[test]
     fn test_effect_set_with_all_flags() {
         let mut effects = EffectSet::new();
-        effects.flags.insert(EffectFlags::READS | EffectFlags::WRITES | EffectFlags::RAISES | EffectFlags::LEAF | EffectFlags::GC_SAFE | EffectFlags::HAS_DESTRUCTOR);
+        effects.flags.insert(
+            EffectFlags::READS
+                | EffectFlags::WRITES
+                | EffectFlags::RAISES
+                | EffectFlags::LEAF
+                | EffectFlags::GC_SAFE
+                | EffectFlags::HAS_DESTRUCTOR,
+        );
 
         assert!(effects.flags.contains(EffectFlags::READS));
         assert!(effects.flags.contains(EffectFlags::WRITES));

@@ -970,7 +970,10 @@ mod tests {
         let mut resolver = ModuleResolver::new();
         resolver.add_search_path(PathBuf::from("/path/to/modules"));
         assert_eq!(resolver.get_search_paths().len(), 1);
-        assert_eq!(resolver.get_search_paths()[0], PathBuf::from("/path/to/modules"));
+        assert_eq!(
+            resolver.get_search_paths()[0],
+            PathBuf::from("/path/to/modules")
+        );
     }
 
     #[test]
@@ -978,7 +981,10 @@ mod tests {
         let mut resolver = ModuleResolver::new();
         resolver.add_stdlib_path(PathBuf::from("/usr/local/nim/lib"));
         assert_eq!(resolver.get_stdlib_paths().len(), 1);
-        assert_eq!(resolver.get_stdlib_paths()[0], PathBuf::from("/usr/local/nim/lib"));
+        assert_eq!(
+            resolver.get_stdlib_paths()[0],
+            PathBuf::from("/usr/local/nim/lib")
+        );
     }
 
     #[test]
@@ -1152,13 +1158,11 @@ mod tests {
         let module = ModuleId::default();
         let import = ImportStmt {
             module_id: ModuleId::default(),
-            symbols: vec![
-                ImportedSymbol {
-                    name: "testSymbol".into(),
-                    alias: None,
-                    symbol_id: Some(SymbolId::default()),
-                },
-            ],
+            symbols: vec![ImportedSymbol {
+                name: "testSymbol".into(),
+                alias: None,
+                symbol_id: Some(SymbolId::default()),
+            }],
             is_explicit: true,
             module_alias: None,
             is_reexport: false,
@@ -1374,8 +1378,15 @@ mod tests {
         let baz_id = table.intern("baz", span);
 
         // Create a module and set exports
-        let module_name = Name { text: "testmodule".into(), span };
-        let module_id = table.add_module(module_name.clone(), FileId::new(0), PathBuf::from("test.nim"));
+        let module_name = Name {
+            text: "testmodule".into(),
+            span,
+        };
+        let module_id = table.add_module(
+            module_name.clone(),
+            FileId::new(0),
+            PathBuf::from("test.nim"),
+        );
         if let Some(module) = table.get_module(module_id) {
             let mut exports = table.get_module(module_id).unwrap().exports.clone();
             exports.push(foo_id);
@@ -1446,7 +1457,10 @@ mod tests {
         assert!(name1.is_some());
         assert!(name2.is_some());
         // The IDs should be equal if we use normalized comparison
-        assert!(names_equal(name1.unwrap().text.as_ref(), name2.unwrap().text.as_ref()));
+        assert!(names_equal(
+            name1.unwrap().text.as_ref(),
+            name2.unwrap().text.as_ref()
+        ));
     }
 
     #[test]
@@ -1467,7 +1481,10 @@ mod tests {
         let id1 = table.intern("dupVar", span);
         // Re-interning same name should return same ID (deduplication)
         let id2 = table.intern("dupVar", span);
-        assert_eq!(id1, id2, "Same identifier should deduplicate to same SymbolId");
+        assert_eq!(
+            id1, id2,
+            "Same identifier should deduplicate to same SymbolId"
+        );
     }
 
     #[test]

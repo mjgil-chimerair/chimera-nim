@@ -798,7 +798,10 @@ mod tests {
         let config = CodegenConfig::default();
         let gen = CCodeGenerator::new(config);
         assert_eq!(gen.emit_type(&MirType::Float(FloatRepr::new(0.0))), "float");
-        assert_eq!(gen.emit_type(&MirType::Double(rnim_mir::FloatRepr64::new(0.0))), "double");
+        assert_eq!(
+            gen.emit_type(&MirType::Double(rnim_mir::FloatRepr64::new(0.0))),
+            "double"
+        );
     }
 
     #[test]
@@ -815,7 +818,10 @@ mod tests {
     fn test_emit_type_seq() {
         let config = CodegenConfig::default();
         let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Seq(Box::new(MirType::Int(32)))), "RNIM_SEQ");
+        assert_eq!(
+            gen.emit_type(&MirType::Seq(Box::new(MirType::Int(32)))),
+            "RNIM_SEQ"
+        );
     }
 
     #[test]
@@ -854,23 +860,38 @@ mod tests {
     fn test_emit_value_bool() {
         let config = CodegenConfig::default();
         let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_value(&MirValue::Bool(true, Span::new(FileId(0), 0, 4))), "true");
-        assert_eq!(gen.emit_value(&MirValue::Bool(false, Span::new(FileId(0), 0, 5))), "false");
+        assert_eq!(
+            gen.emit_value(&MirValue::Bool(true, Span::new(FileId(0), 0, 4))),
+            "true"
+        );
+        assert_eq!(
+            gen.emit_value(&MirValue::Bool(false, Span::new(FileId(0), 0, 5))),
+            "false"
+        );
     }
 
     #[test]
     fn test_emit_value_int() {
         let config = CodegenConfig::default();
         let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_value(&MirValue::Int(42, Span::new(FileId(0), 0, 2))), "42");
-        assert_eq!(gen.emit_value(&MirValue::Uint(100, Span::new(FileId(0), 0, 3))), "100u");
+        assert_eq!(
+            gen.emit_value(&MirValue::Int(42, Span::new(FileId(0), 0, 2))),
+            "42"
+        );
+        assert_eq!(
+            gen.emit_value(&MirValue::Uint(100, Span::new(FileId(0), 0, 3))),
+            "100u"
+        );
     }
 
     #[test]
     fn test_emit_value_unit() {
         let config = CodegenConfig::default();
         let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_value(&MirValue::Unit(Span::new(FileId(0), 0, 0))), "RNIM_UNIT");
+        assert_eq!(
+            gen.emit_value(&MirValue::Unit(Span::new(FileId(0), 0, 0))),
+            "RNIM_UNIT"
+        );
     }
 
     #[test]

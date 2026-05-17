@@ -662,11 +662,26 @@ mod tests {
 
     #[test]
     fn test_default_primitive_value() {
-        assert_eq!(default_primitive_value(PrimitiveKind::Bool), LiteralValue::Bool(false));
-        assert_eq!(default_primitive_value(PrimitiveKind::Char), LiteralValue::Char('\0'));
-        assert_eq!(default_primitive_value(PrimitiveKind::Int), LiteralValue::Int(0));
-        assert_eq!(default_primitive_value(PrimitiveKind::Uint), LiteralValue::Uint(0));
-        assert_eq!(default_primitive_value(PrimitiveKind::Float), LiteralValue::Float(0.0));
+        assert_eq!(
+            default_primitive_value(PrimitiveKind::Bool),
+            LiteralValue::Bool(false)
+        );
+        assert_eq!(
+            default_primitive_value(PrimitiveKind::Char),
+            LiteralValue::Char('\0')
+        );
+        assert_eq!(
+            default_primitive_value(PrimitiveKind::Int),
+            LiteralValue::Int(0)
+        );
+        assert_eq!(
+            default_primitive_value(PrimitiveKind::Uint),
+            LiteralValue::Uint(0)
+        );
+        assert_eq!(
+            default_primitive_value(PrimitiveKind::Float),
+            LiteralValue::Float(0.0)
+        );
     }
 
     #[test]
@@ -675,7 +690,10 @@ mod tests {
         assert!(matches!(LiteralValue::Char('a'), LiteralValue::Char('a')));
         assert!(matches!(LiteralValue::Int(42), LiteralValue::Int(42)));
         assert!(matches!(LiteralValue::Uint(42), LiteralValue::Uint(42)));
-        assert!(matches!(LiteralValue::Float(3.14), LiteralValue::Float(3.14)));
+        assert!(matches!(
+            LiteralValue::Float(3.14),
+            LiteralValue::Float(3.14)
+        ));
         let s = LiteralValue::String("hello".into());
         assert!(matches!(s, LiteralValue::String(_)));
     }
@@ -691,13 +709,11 @@ mod tests {
     fn test_type_enum() {
         let e = EnumType {
             name: "Color".into(),
-            values: vec![
-                EnumValue {
-                    name: "Red".into(),
-                    ordinal: 0,
-                    span: Span::new(FileId::new(0), 0, 3),
-                },
-            ],
+            values: vec![EnumValue {
+                name: "Red".into(),
+                ordinal: 0,
+                span: Span::new(FileId::new(0), 0, 3),
+            }],
         };
         let t = Type::Enum(e);
         assert!(matches!(t, Type::Enum(_)));
@@ -734,13 +750,11 @@ mod tests {
     #[test]
     fn test_type_object() {
         let t = Type::Object {
-            fields: vec![
-                Field {
-                    name: "x".into(),
-                    typ: TyId::new(4),
-                    offset: Some(0),
-                },
-            ],
+            fields: vec![Field {
+                name: "x".into(),
+                typ: TyId::new(4),
+                offset: Some(0),
+            }],
             base: None,
         };
         assert!(matches!(t, Type::Object { fields, base: None } if fields.len() == 1));
@@ -752,13 +766,28 @@ mod tests {
             fields: vec![],
             base: Some(TyId::new(5)),
         };
-        assert!(matches!(t, Type::Object { fields: _, base: Some(_) }));
+        assert!(matches!(
+            t,
+            Type::Object {
+                fields: _,
+                base: Some(_)
+            }
+        ));
     }
 
     #[test]
     fn test_type_array() {
-        let t = Type::Array { elem: TyId::new(6), len: Some(10) };
-        assert!(matches!(t, Type::Array { elem: _, len: Some(10) }));
+        let t = Type::Array {
+            elem: TyId::new(6),
+            len: Some(10),
+        };
+        assert!(matches!(
+            t,
+            Type::Array {
+                elem: _,
+                len: Some(10)
+            }
+        ));
     }
 
     #[test]
@@ -781,19 +810,25 @@ mod tests {
 
     #[test]
     fn test_type_tuple() {
-        let t = Type::Tuple { fields: vec![TyId::new(10), TyId::new(11)] };
+        let t = Type::Tuple {
+            fields: vec![TyId::new(10), TyId::new(11)],
+        };
         assert!(matches!(t, Type::Tuple { fields } if fields.len() == 2));
     }
 
     #[test]
     fn test_type_ref() {
-        let t = Type::Ref { inner: TyId::new(12) };
+        let t = Type::Ref {
+            inner: TyId::new(12),
+        };
         assert!(matches!(t, Type::Ref { inner: _ }));
     }
 
     #[test]
     fn test_type_ptr() {
-        let t = Type::Ptr { inner: TyId::new(13) };
+        let t = Type::Ptr {
+            inner: TyId::new(13),
+        };
         assert!(matches!(t, Type::Ptr { inner: _ }));
     }
 
@@ -804,12 +839,21 @@ mod tests {
             ret: Some(TyId::new(15)),
             calling_convention: CallingConvention::Nimcall,
         };
-        assert!(matches!(t, Type::Proc { params: _, ret: Some(_), calling_convention: CallingConvention::Nimcall }));
+        assert!(matches!(
+            t,
+            Type::Proc {
+                params: _,
+                ret: Some(_),
+                calling_convention: CallingConvention::Nimcall
+            }
+        ));
     }
 
     #[test]
     fn test_type_typedesc() {
-        let t = Type::TypeDesc { inner: Some(TyId::new(16)) };
+        let t = Type::TypeDesc {
+            inner: Some(TyId::new(16)),
+        };
         assert!(matches!(t, Type::TypeDesc { inner: Some(_) }));
     }
 
@@ -821,13 +865,17 @@ mod tests {
 
     #[test]
     fn test_type_static() {
-        let t = Type::Static { inner: TyId::new(17) };
+        let t = Type::Static {
+            inner: TyId::new(17),
+        };
         assert!(matches!(t, Type::Static { inner: _ }));
     }
 
     #[test]
     fn test_type_varargs() {
-        let t = Type::Varargs { elem: TyId::new(18) };
+        let t = Type::Varargs {
+            elem: TyId::new(18),
+        };
         assert!(matches!(t, Type::Varargs { elem: _ }));
     }
 
@@ -863,15 +911,39 @@ mod tests {
 
     #[test]
     fn test_calling_convention_variants() {
-        assert!(matches!(CallingConvention::Nimcall, CallingConvention::Nimcall));
+        assert!(matches!(
+            CallingConvention::Nimcall,
+            CallingConvention::Nimcall
+        ));
         assert!(matches!(CallingConvention::Cdecl, CallingConvention::Cdecl));
-        assert!(matches!(CallingConvention::Stdcall, CallingConvention::Stdcall));
-        assert!(matches!(CallingConvention::Syscall, CallingConvention::Syscall));
-        assert!(matches!(CallingConvention::Inline, CallingConvention::Inline));
-        assert!(matches!(CallingConvention::NoInline, CallingConvention::NoInline));
-        assert!(matches!(CallingConvention::Fastcall, CallingConvention::Fastcall));
-        assert!(matches!(CallingConvention::Thiscall, CallingConvention::Thiscall));
-        assert!(matches!(CallingConvention::Pascal, CallingConvention::Pascal));
+        assert!(matches!(
+            CallingConvention::Stdcall,
+            CallingConvention::Stdcall
+        ));
+        assert!(matches!(
+            CallingConvention::Syscall,
+            CallingConvention::Syscall
+        ));
+        assert!(matches!(
+            CallingConvention::Inline,
+            CallingConvention::Inline
+        ));
+        assert!(matches!(
+            CallingConvention::NoInline,
+            CallingConvention::NoInline
+        ));
+        assert!(matches!(
+            CallingConvention::Fastcall,
+            CallingConvention::Fastcall
+        ));
+        assert!(matches!(
+            CallingConvention::Thiscall,
+            CallingConvention::Thiscall
+        ));
+        assert!(matches!(
+            CallingConvention::Pascal,
+            CallingConvention::Pascal
+        ));
     }
 
     #[test]
@@ -985,11 +1057,7 @@ mod tests {
         let mut ctx = TypeCtx::default();
         let param = ctx.get_or_create_primitive(PrimitiveKind::Int);
         let ret = ctx.get_or_create_primitive(PrimitiveKind::Float);
-        let proc_type = ctx.create_proc(
-            vec![param],
-            Some(ret),
-            CallingConvention::Nimcall,
-        );
+        let proc_type = ctx.create_proc(vec![param], Some(ret), CallingConvention::Nimcall);
         assert!(proc_type.index() > ret.index());
     }
 

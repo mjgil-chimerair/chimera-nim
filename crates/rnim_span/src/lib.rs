@@ -400,7 +400,7 @@ impl SourceMap {
     /// Convert span to line and column
     pub fn span_to_line_col(&self, span: Span) -> Option<(Line, Column)> {
         let file = self.get(span.file)?;
-        file.byte_to_line_col(span.start).map(|(l, c)| (l, c))
+        file.byte_to_line_col(span.start)
     }
 
     /// Format span for diagnostics
@@ -873,10 +873,12 @@ mod tests {
     }
 }
 
+#[allow(dead_code)]
 fn overlaps(a: Span, b: Span) -> bool {
     a.file == b.file && a.start < b.end && b.start < a.end
 }
 
+#[allow(dead_code)]
 fn touches(a: Span, b: Span) -> bool {
     a.file == b.file && (a.end == b.start || b.end == a.start)
 }

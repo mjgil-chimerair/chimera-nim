@@ -196,8 +196,8 @@ pub struct Lexer<'a> {
     chars: std::iter::Peekable<std::str::CharIndices<'a>>,
     /// Stack of indentation levels
     indent_stack: Vec<u32>,
-    /// Pending indent/dedent to emit (None, or Some(true) for indent, Some(false) for dedent)
-    pending_indent: Option<Option<u32>>,
+    /// Pending dedent to emit for EOF (remaining count when > 0, or normal dedent when negative)
+    pending_indent: Option<i32>,
     /// Current line start offset
     line_start: u32,
     /// Track if we've hit a newline and should track indent on next non-whitespace
@@ -723,17 +723,26 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Option<Token> {
         // Emit pending indent/dedent first
-        if let Some(Some(_)) = self.pending_indent.take() {
-            return Some(Token::new(
-                TokenKind::Indent,
-                self.span(self.offset, self.offset),
-            ));
-        }
-        if let Some(None) = self.pending_indent.take() {
-            return Some(Token::new(
-                TokenKind::Dedent,
-                self.span(self.offset, self.offset),
-            ));
+        if let Some(n) = self.pending_indent {
+            self.pending_indent = None;
+            if n > 0 {
+                // EOF dedent: decrement counter and emit one dedent
+                self.pending_indent = Some(n - 1);
+                return Some(Token::new(
+                    TokenKind::Dedent,
+                    self.span(self.offset, self.offset),
+                ));
+            } else if n == 0 {
+                return Some(Token::new(
+                    TokenKind::Indent,
+                    self.span(self.offset, self.offset),
+                ));
+            } else {
+                return Some(Token::new(
+                    TokenKind::Dedent,
+                    self.span(self.offset, self.offset),
+                ));
+            }
         }
 
         // Handle indentation at start of line (after newline)
@@ -758,10 +767,10 @@ impl<'a> Lexer<'a> {
             self.after_newline = false;
 
             if indent > top_indent {
-                self.pending_indent = Some(Some(indent));
+                self.pending_indent = Some(0); // indent
                 self.indent_stack.push(indent);
             } else if indent < top_indent {
-                self.pending_indent = Some(None);
+                self.pending_indent = Some(-1); // dedent
                 while let Some(&prev) = self.indent_stack.last() {
                     if prev > indent && self.indent_stack.len() > 1 {
                         self.indent_stack.pop();
@@ -772,25 +781,29 @@ impl<'a> Lexer<'a> {
             }
 
             // Emit the indent/dedent token
-            if let Some(Some(_)) = self.pending_indent.take() {
-                return Some(Token::new(
-                    TokenKind::Indent,
-                    self.span(self.offset, self.offset),
-                ));
-            }
-            if let Some(None) = self.pending_indent.take() {
-                return Some(Token::new(
-                    TokenKind::Dedent,
-                    self.span(self.offset, self.offset),
-                ));
+            if let Some(n) = self.pending_indent.take() {
+                if n == 0 {
+                    return Some(Token::new(
+                        TokenKind::Indent,
+                        self.span(self.offset, self.offset),
+                    ));
+                } else {
+                    return Some(Token::new(
+                        TokenKind::Dedent,
+                        self.span(self.offset, self.offset),
+                    ));
+                }
             }
         }
 
         let start = self.offset;
         let Some((i, c)) = self.chars.next() else {
             // EOF: emit dedents for any remaining indent levels
-            while self.indent_stack.len() > 1 {
-                self.indent_stack.pop();
+            let remaining = self.indent_stack.len() - 1;
+            if remaining > 0 {
+                // Store remaining dedent count, will be decremented as we emit
+                self.pending_indent = Some(remaining as i32);
+                self.indent_stack.truncate(1);
                 return Some(Token::new(TokenKind::Dedent, self.span(start, start)));
             }
             return Some(Token::new(TokenKind::Eof, self.span(start, start)));
@@ -989,11 +1002,11 @@ mod tests {
     fn test_all_keywords_tokenize() {
         let keywords = [
             "proc", "func", "method", "iterator", "macro", "template", "type", "var", "let",
-            "const", "if", "elif", "else", "when", "case", "of", "for", "while", "repeat",
-            "until", "return", "yield", "break", "continue", "raise", "try", "except",
-            "finally", "defer", "block", "from", "import", "include", "export", "mixin",
-            "bind", "using", "static", "const", "readonly", "volatile", "owned", "noinit",
-            "inject", "dirty", "bycopy", "byref", "callsite", "cached",
+            "const", "if", "elif", "else", "when", "case", "of", "for", "while", "repeat", "until",
+            "return", "yield", "break", "continue", "raise", "try", "except", "finally", "defer",
+            "block", "from", "import", "include", "export", "mixin", "bind", "using", "static",
+            "const", "readonly", "volatile", "owned", "noinit", "inject", "dirty", "bycopy",
+            "byref", "callsite", "cached",
         ];
         for kw in keywords {
             let tokens = tokenize(kw);
@@ -1298,8 +1311,14 @@ mod tests {
         // Source with clear indent/dedent structure
         let source = "proc foo\n  echo 1\n  echo 2";
         let tokens = tokenize_all(source);
-        let indent_count = tokens.iter().filter(|t| t.kind == TokenKind::Indent).count();
-        let dedent_count = tokens.iter().filter(|t| t.kind == TokenKind::Dedent).count();
+        let indent_count = tokens
+            .iter()
+            .filter(|t| t.kind == TokenKind::Indent)
+            .count();
+        let dedent_count = tokens
+            .iter()
+            .filter(|t| t.kind == TokenKind::Dedent)
+            .count();
         // At EOF, should have matching dedent
         assert!(dedent_count >= 1 || indent_count >= 1 || !tokens.is_empty());
     }
@@ -1317,12 +1336,26 @@ mod tests {
         // Nested if statements with increasing indent
         let source = "proc test\n  if true\n    if true\n      echo 1";
         let tokens = tokenize_all(source);
-        let indent_count = tokens.iter().filter(|t| t.kind == TokenKind::Indent).count();
-        let dedent_count = tokens.iter().filter(|t| t.kind == TokenKind::Dedent).count();
+        let indent_count = tokens
+            .iter()
+            .filter(|t| t.kind == TokenKind::Indent)
+            .count();
+        let dedent_count = tokens
+            .iter()
+            .filter(|t| t.kind == TokenKind::Dedent)
+            .count();
         // Should have at least 2 indent levels
-        assert!(indent_count >= 2, "Expected at least 2 indent tokens, got {}", indent_count);
+        assert!(
+            indent_count >= 2,
+            "Expected at least 2 indent tokens, got {}",
+            indent_count
+        );
         // Should have matching dedents
-        assert!(dedent_count >= 2, "Expected at least 2 dedent tokens, got {}", dedent_count);
+        assert!(
+            dedent_count >= 2,
+            "Expected at least 2 dedent tokens, got {}",
+            dedent_count
+        );
     }
 
     #[test]
@@ -1342,7 +1375,8 @@ mod tests {
         let source = "proc test\n  if x\n    echo 1\n    echo 2";
         let tokens = tokenize_all(source);
         // Capture indent/dedent order
-        let events: Vec<_> = tokens.iter()
+        let events: Vec<_> = tokens
+            .iter()
             .filter(|t| t.kind == TokenKind::Indent || t.kind == TokenKind::Dedent)
             .map(|t| t.kind)
             .collect();
@@ -1373,9 +1407,16 @@ mod tests {
         // At EOF, should emit dedents for all remaining indent levels
         let source = "proc test\n  if x\n    echo 1";
         let tokens = tokenize_all(source);
-        let dedent_count = tokens.iter().filter(|t| t.kind == TokenKind::Dedent).count();
+        let dedent_count = tokens
+            .iter()
+            .filter(|t| t.kind == TokenKind::Dedent)
+            .count();
         // Should have dedents for the nested structure
-        assert!(dedent_count >= 2, "Expected at least 2 dedents at EOF, got {}", dedent_count);
+        assert!(
+            dedent_count >= 2,
+            "Expected at least 2 dedents at EOF, got {}",
+            dedent_count
+        );
     }
 
     #[test]
@@ -1394,7 +1435,10 @@ mod tests {
         let source = "if x\n  echo 1";
         let tokens = tokenize_all(source);
         let kinds: Vec<_> = tokens.iter().map(|t| t.kind).collect();
-        assert!(kinds.contains(&TokenKind::Indent), "Expected indent after if");
+        assert!(
+            kinds.contains(&TokenKind::Indent),
+            "Expected indent after if"
+        );
     }
 
     #[test]
@@ -1402,7 +1446,10 @@ mod tests {
         let source = "while true\n  echo 1";
         let tokens = tokenize_all(source);
         let kinds: Vec<_> = tokens.iter().map(|t| t.kind).collect();
-        assert!(kinds.contains(&TokenKind::Indent), "Expected indent after while");
+        assert!(
+            kinds.contains(&TokenKind::Indent),
+            "Expected indent after while"
+        );
     }
 
     #[test]
@@ -1410,7 +1457,10 @@ mod tests {
         let source = "for i in 0..10\n  echo i";
         let tokens = tokenize_all(source);
         let kinds: Vec<_> = tokens.iter().map(|t| t.kind).collect();
-        assert!(kinds.contains(&TokenKind::Indent), "Expected indent after for");
+        assert!(
+            kinds.contains(&TokenKind::Indent),
+            "Expected indent after for"
+        );
     }
 
     #[test]
@@ -1426,7 +1476,10 @@ mod tests {
         let source = "block\n  echo 1";
         let tokens = tokenize_all(source);
         let kinds: Vec<_> = tokens.iter().map(|t| t.kind).collect();
-        assert!(kinds.contains(&TokenKind::Indent), "Expected indent after block");
+        assert!(
+            kinds.contains(&TokenKind::Indent),
+            "Expected indent after block"
+        );
     }
 
     #[test]

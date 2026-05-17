@@ -1377,7 +1377,14 @@ mod tests {
             then_block: NodeIndex::new(1),
             else_block: NodeIndex::new(2),
         };
-        assert!(matches!(term, Terminator::If { then_block: _, else_block: _, .. }));
+        assert!(matches!(
+            term,
+            Terminator::If {
+                then_block: _,
+                else_block: _,
+                ..
+            }
+        ));
     }
 
     #[test]
@@ -1444,11 +1451,7 @@ mod tests {
     #[test]
     fn test_mir_value_cast() {
         let span = Span::new(FileId(0), 0, 0);
-        let val = MirValue::Cast(
-            Box::new(MirValue::Int(10, span)),
-            MirType::Int(32),
-            span,
-        );
+        let val = MirValue::Cast(Box::new(MirValue::Int(10, span)), MirType::Int(32), span);
         assert!(matches!(val, MirValue::Cast(..)));
     }
 
@@ -1547,14 +1550,18 @@ mod tests {
         // Loop body block
         let loop_block = builder.block(span);
         builder.stmt(MirStmt::Nop);
-        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(NodeIndex::new(cond_block)))));
+        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(
+            NodeIndex::new(cond_block),
+        ))));
 
         // After loop block
         let after_block = builder.block(span);
         builder.terminator(Terminator::Return);
 
         // Connect entry to condition
-        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(NodeIndex::new(cond_block)))));
+        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(
+            NodeIndex::new(cond_block),
+        ))));
 
         let body = builder.finish(ret_place, 0, span);
 
@@ -1591,14 +1598,18 @@ mod tests {
             place: Place::new(Local::new(0, span)),
             value: MirValue::Int(10, span),
         });
-        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(NodeIndex::new(merge_block)))));
+        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(
+            NodeIndex::new(merge_block),
+        ))));
 
         // Else block
         builder.stmt(MirStmt::Assign {
             place: Place::new(Local::new(0, span)),
             value: MirValue::Int(20, span),
         });
-        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(NodeIndex::new(merge_block)))));
+        builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(
+            NodeIndex::new(merge_block),
+        ))));
 
         // Merge block
         builder.terminator(Terminator::Return);

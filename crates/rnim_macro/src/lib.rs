@@ -982,7 +982,9 @@ mod tests {
     fn test_template_param_with_typed() {
         let param = TemplateParam {
             name: "x".to_string(),
-            kind: TemplateParamKind::Typed { expected_type: Some("int".to_string()) },
+            kind: TemplateParamKind::Typed {
+                expected_type: Some("int".to_string()),
+            },
             default_value: None,
         };
         assert!(matches!(param.kind, TemplateParamKind::Typed { .. }));
@@ -1021,7 +1023,9 @@ mod tests {
         let mut expander = TemplateExpander::new();
         let params = vec![TemplateParam {
             name: "n".to_string(),
-            kind: TemplateParamKind::Typed { expected_type: Some("int".to_string()) },
+            kind: TemplateParamKind::Typed {
+                expected_type: Some("int".to_string()),
+            },
             default_value: None,
         }];
         let result = expander.expand("let x = $n$", &params, &["42".to_string()]);
@@ -1100,7 +1104,13 @@ mod tests {
             body,
             span,
         );
-        if let AstKind::ProcDef { name, params, ret_type, .. } = &node.kind {
+        if let AstKind::ProcDef {
+            name,
+            params,
+            ret_type,
+            ..
+        } = &node.kind
+        {
             assert_eq!(name, "add");
             assert_eq!(params.len(), 1);
             assert!(ret_type.is_some());
@@ -1131,15 +1141,18 @@ mod tests {
     fn test_template_expander_recursion_with_deeply_nested() {
         // Test template expansion with deeply nested substitutions
         let mut expander = TemplateExpander::new();
-        let params = vec![TemplateParam {
-            name: "a".to_string(),
-            kind: TemplateParamKind::Untyped,
-            default_value: None,
-        }, TemplateParam {
-            name: "b".to_string(),
-            kind: TemplateParamKind::Untyped,
-            default_value: None,
-        }];
+        let params = vec![
+            TemplateParam {
+                name: "a".to_string(),
+                kind: TemplateParamKind::Untyped,
+                default_value: None,
+            },
+            TemplateParam {
+                name: "b".to_string(),
+                kind: TemplateParamKind::Untyped,
+                default_value: None,
+            },
+        ];
         let result = expander.expand("$a$ + $b$", &params, &["1".to_string(), "2".to_string()]);
         assert!(result.is_ok());
         let expanded = result.unwrap();
