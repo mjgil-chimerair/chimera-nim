@@ -1,5 +1,7 @@
 //! Template and macro expansion, hygienic symbol handling, Nim AST macro API model.
 
+#![allow(clippy::collapsible_match, clippy::bool_comparison, unused_variables)]
+
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_span::Span;
@@ -483,6 +485,7 @@ impl TemplateExpander {
 
 /// Macro expander for Nim's AST macros
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct MacroExpander {
     template_expander: TemplateExpander,
 }

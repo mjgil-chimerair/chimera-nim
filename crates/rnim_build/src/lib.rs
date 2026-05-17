@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use std::process::Command;
 
 /// Link target format
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LinkFormat {
-    /// Executable
+    #[default]
     Executable,
     /// Shared library
     SharedLib,
@@ -20,12 +20,6 @@ pub enum LinkFormat {
     StaticLib,
     /// Object file
     ObjectFile,
-}
-
-impl Default for LinkFormat {
-    fn default() -> Self {
-        LinkFormat::Executable
-    }
 }
 
 /// Compile/link plan for a single file
@@ -112,9 +106,9 @@ impl CompilePlan {
 }
 
 /// External compiler selection
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Compiler {
-    /// GCC
+    #[default]
     Gcc,
     /// Clang
     Clang,
@@ -122,12 +116,6 @@ pub enum Compiler {
     Msvc,
     /// Custom command
     Custom(&'static str),
-}
-
-impl Default for Compiler {
-    fn default() -> Self {
-        Compiler::Gcc
-    }
 }
 
 impl Compiler {

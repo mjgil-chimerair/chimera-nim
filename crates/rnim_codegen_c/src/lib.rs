@@ -1,11 +1,13 @@
 //! C/C++/Objective-C compatible backend, generated headers, ABI lowering, external compiler invocation.
 
+#![allow(dead_code)]
+
 use camino::{Utf8Path, Utf8PathBuf};
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_mir::{
-    BinOp, CmpOp, Function, FunctionAttribute, GotoTarget, Local, MirBody, MirModule, MirStmt,
-    MirType, MirValue, Place, Terminator, UnOp,
+    BinOp, CmpOp, Function, FunctionAttribute, GotoTarget, MirBody, MirModule, MirStmt, MirType,
+    MirValue, Terminator, UnOp,
 };
 use rnim_span::{FileId, Span};
 use std::collections::HashMap;
@@ -20,17 +22,12 @@ pub struct CodegenConfig {
     pub use_orc: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum CVersion {
     C99,
+    #[default]
     C11,
     C17,
-}
-
-impl Default for CVersion {
-    fn default() -> Self {
-        CVersion::C11
-    }
 }
 
 impl Default for CodegenConfig {
@@ -662,24 +659,24 @@ mod tests {
     #[test]
     fn test_emit_type_bool() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Bool), "bool");
+        let r#gen = CCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Bool), "bool");
     }
 
     #[test]
     fn test_emit_type_int() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Int(32)), "int32_t");
-        assert_eq!(gen.emit_type(&MirType::Uint(64)), "uint64_t");
+        let r#gen = CCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Int(32)), "int32_t");
+        assert_eq!(r#gen.emit_type(&MirType::Uint(64)), "uint64_t");
     }
 
     #[test]
     fn test_emit_type_ref() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Ref(Box::new(MirType::Int(32)))),
+            r#gen.emit_type(&MirType::Ref(Box::new(MirType::Int(32)))),
             "int32_t*"
         );
     }
@@ -687,16 +684,16 @@ mod tests {
     #[test]
     fn test_emit_type_string() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::String), "RNIM_STRING");
+        let r#gen = CCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::String), "RNIM_STRING");
     }
 
     #[test]
     fn test_emit_type_array() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Array(Box::new(MirType::Int(32)), 10)),
+            r#gen.emit_type(&MirType::Array(Box::new(MirType::Int(32)), 10)),
             "int32_t[10]"
         );
     }
@@ -704,14 +701,14 @@ mod tests {
     #[test]
     fn test_mir_type_void() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Unit), "void");
+        let r#gen = CCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Unit), "void");
     }
 
     #[test]
     fn test_emit_c_with_empty_module() {
         let config = CodegenConfig::default();
-        let mut gen = CCodeGenerator::new(config);
+        let mut r#gen = CCodeGenerator::new(config);
 
         let module = MirModule {
             name: "empty".to_string(),
@@ -720,7 +717,7 @@ mod tests {
             source_span: Span::new(FileId(0), 0, 0),
         };
 
-        let result = gen.emit_c(&module);
+        let result = r#gen.emit_c(&module);
 
         assert!(result.header.contains("#ifndef RNIM_GEN_H"));
         assert!(result.header.contains("RNIM_STRING"));
@@ -730,19 +727,19 @@ mod tests {
     #[test]
     fn test_emit_type_proc() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         let proc_type = MirType::Proc(
             vec![MirType::Int(32), MirType::Int(32)],
             Box::new(MirType::Int(32)),
         );
-        let result = gen.emit_type(&proc_type);
+        let result = r#gen.emit_type(&proc_type);
         assert!(result.contains("int32_t"));
     }
 
     #[test]
     fn test_emit_type_adt() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         let adt_type = MirType::Adt(
             "MyStruct".to_string(),
             vec![
@@ -750,7 +747,7 @@ mod tests {
                 ("field2".to_string(), MirType::Bool),
             ],
         );
-        assert_eq!(gen.emit_type(&adt_type), "MyStruct");
+        assert_eq!(r#gen.emit_type(&adt_type), "MyStruct");
     }
 
     #[test]
@@ -796,10 +793,13 @@ mod tests {
     fn test_emit_type_float_double() {
         use rnim_mir::FloatRepr;
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Float(FloatRepr::new(0.0))), "float");
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Double(rnim_mir::FloatRepr64::new(0.0))),
+            r#gen.emit_type(&MirType::Float(FloatRepr::new(0.0))),
+            "float"
+        );
+        assert_eq!(
+            r#gen.emit_type(&MirType::Double(rnim_mir::FloatRepr64::new(0.0))),
             "double"
         );
     }
@@ -807,9 +807,9 @@ mod tests {
     #[test]
     fn test_emit_type_pointer() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Pointer(Box::new(MirType::Int(32)))),
+            r#gen.emit_type(&MirType::Pointer(Box::new(MirType::Int(32)))),
             "int32_t*"
         );
     }
@@ -817,9 +817,9 @@ mod tests {
     #[test]
     fn test_emit_type_seq() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Seq(Box::new(MirType::Int(32)))),
+            r#gen.emit_type(&MirType::Seq(Box::new(MirType::Int(32)))),
             "RNIM_SEQ"
         );
     }
@@ -827,9 +827,9 @@ mod tests {
     #[test]
     fn test_emit_type_open_array() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::OpenArray(Box::new(MirType::Int(32)))),
+            r#gen.emit_type(&MirType::OpenArray(Box::new(MirType::Int(32)))),
             "RNIM_OPENARRAY(int32_t)"
         );
     }
@@ -837,9 +837,9 @@ mod tests {
     #[test]
     fn test_emit_type_tuple() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Tuple(vec![MirType::Int(32), MirType::Bool])),
+            r#gen.emit_type(&MirType::Tuple(vec![MirType::Int(32), MirType::Bool])),
             "struct { int32_t f_0; bool f_1 }"
         );
     }
@@ -859,13 +859,13 @@ mod tests {
     #[test]
     fn test_emit_value_bool() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_value(&MirValue::Bool(true, Span::new(FileId(0), 0, 4))),
+            r#gen.emit_value(&MirValue::Bool(true, Span::new(FileId(0), 0, 4))),
             "true"
         );
         assert_eq!(
-            gen.emit_value(&MirValue::Bool(false, Span::new(FileId(0), 0, 5))),
+            r#gen.emit_value(&MirValue::Bool(false, Span::new(FileId(0), 0, 5))),
             "false"
         );
     }
@@ -873,13 +873,13 @@ mod tests {
     #[test]
     fn test_emit_value_int() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_value(&MirValue::Int(42, Span::new(FileId(0), 0, 2))),
+            r#gen.emit_value(&MirValue::Int(42, Span::new(FileId(0), 0, 2))),
             "42"
         );
         assert_eq!(
-            gen.emit_value(&MirValue::Uint(100, Span::new(FileId(0), 0, 3))),
+            r#gen.emit_value(&MirValue::Uint(100, Span::new(FileId(0), 0, 3))),
             "100u"
         );
     }
@@ -887,9 +887,9 @@ mod tests {
     #[test]
     fn test_emit_value_unit() {
         let config = CodegenConfig::default();
-        let gen = CCodeGenerator::new(config);
+        let r#gen = CCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_value(&MirValue::Unit(Span::new(FileId(0), 0, 0))),
+            r#gen.emit_value(&MirValue::Unit(Span::new(FileId(0), 0, 0))),
             "RNIM_UNIT"
         );
     }

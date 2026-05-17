@@ -259,7 +259,8 @@ fn test_invalid_token() {
     let mut lexer = Lexer::new(source, FileId(0));
     // Should produce some kind of token, not panic
     let token = lexer.next_token().unwrap();
-    assert!(token.kind != TokenKind::Eof || true); // Reaches some valid state
+    assert_eq!(token.kind, TokenKind::Opr);
+    assert_eq!(token.literal.as_str(), source);
 }
 
 /// Test multiple tokens in sequence - verify proc and identifier

@@ -4,7 +4,6 @@
 //! mangling, and class/property emission helpers.
 
 use crate::cpp::ObjCSelector;
-use rnim_span::Span;
 
 /// Objective-C runtime type encoding
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -340,6 +339,7 @@ impl ObjCMethodSignature {
 
 /// Message send helper for calling Objective-C methods
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ObjCMessageSend {
     /// Target expression
     target: String,
@@ -369,7 +369,7 @@ impl ObjCMessageSend {
             let mut result = format!("[{} ", self.target);
             for (i, part) in parts.iter().enumerate() {
                 if i > 0 {
-                    result.push_str(" ");
+                    result.push(' ');
                 }
                 result.push_str(part);
                 result.push(':');

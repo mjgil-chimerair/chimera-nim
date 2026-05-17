@@ -3,6 +3,8 @@
 //! This module validates that crate dependencies follow the allowed edges
 //! defined in docs/design/workspace.md.
 
+#![allow(unused_imports)]
+
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -124,6 +126,7 @@ pub fn is_frontend_backend_violation(from: &str, to: &str) -> bool {
 }
 
 /// Parse Cargo.toml to extract dependencies
+#[allow(dead_code)]
 fn parse_deps(cargo_toml: &str) -> Vec<String> {
     let mut deps = Vec::new();
 
@@ -138,7 +141,7 @@ fn parse_deps(cargo_toml: &str) -> Vec<String> {
         .split("[dependencies]")
         .nth(1)
         .unwrap_or("")
-        .split(|c| c == '[')
+        .split('[')
         .next()
         .unwrap_or("");
 

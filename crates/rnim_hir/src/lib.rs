@@ -4,7 +4,6 @@
 use rnim_allocator as _;
 use rnim_span::{FileId, Span};
 use rnim_symbols::{ScopeId, SymbolId};
-use rustc_hash::FxHashMap;
 
 /// A resolved HIR module
 #[derive(Debug, Clone)]
@@ -1137,7 +1136,7 @@ mod tests {
 
     #[test]
     fn test_hir_item_variants() {
-        let items = vec![
+        let items = [
             HirItem::Proc(HirProc {
                 name: SymbolId::default(),
                 span: Span::new(FileId::new(0), 0, 10),

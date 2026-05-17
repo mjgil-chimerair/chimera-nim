@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 use rnim_allocator as _;
-use rnim_span::{FileId, Span};
+use rnim_span::Span;
 use std::collections::HashMap;
 
 /// VM value types
@@ -249,7 +249,7 @@ impl CallFrame {
 }
 
 /// VM execution state
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct VmState {
     stack: Vec<VmValue>,
     frames: Vec<CallFrame>,
@@ -257,14 +257,6 @@ pub struct VmState {
 }
 
 impl VmState {
-    pub fn new() -> Self {
-        VmState {
-            stack: Vec::new(),
-            frames: Vec::new(),
-            panic: None,
-        }
-    }
-
     pub fn push(&mut self, value: VmValue) {
         self.stack.push(value);
     }
@@ -368,7 +360,7 @@ impl Vm {
             ));
         }
 
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         let mut ip = 0;
         let mut instructions_executed = 0;
         let bytecode = proc_info.2;
@@ -728,7 +720,7 @@ impl Vm {
                     }
                 }
                 OpCode::MkObject(typ) => {
-                    let mut fields = HashMap::new();
+                    let fields = HashMap::new();
                     state.push(VmValue::Object {
                         typ: typ.clone(),
                         fields,
@@ -771,6 +763,7 @@ impl Default for Vm {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rnim_span::FileId;
 
     #[test]
     fn test_vm_value_equality() {
@@ -796,20 +789,20 @@ mod tests {
 
     #[test]
     fn test_vm_state_push_pop() {
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         state.push(VmValue::Int(42));
         assert_eq!(state.pop(), Ok(VmValue::Int(42)));
     }
 
     #[test]
     fn test_vm_state_underflow() {
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         assert!(state.pop().is_err());
     }
 
     #[test]
     fn test_vm_state_dup() {
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         state.push(VmValue::Int(42));
         state.dup().unwrap();
         assert_eq!(state.pop(), Ok(VmValue::Int(42)));
@@ -818,7 +811,7 @@ mod tests {
 
     #[test]
     fn test_vm_state_swap() {
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         state.push(VmValue::Int(1));
         state.push(VmValue::Int(2));
         state.swap().unwrap();
@@ -1011,7 +1004,7 @@ mod tests {
 
     #[test]
     fn test_instruction_with_span() {
-        let span = Span::new(FileId(0), 0, 0);
+        let span = Span::new(FileId::new(0), 0, 0);
         let instr = Instruction::with_span(OpCode::Halt, span);
         assert!(matches!(instr.opcode, OpCode::Halt));
         assert!(instr.span.is_some());
@@ -1039,8 +1032,11 @@ mod tests {
 
     #[test]
     fn test_vm_value_float() {
-        let val = VmValue::Float(3.14);
-        assert!(matches!(val, VmValue::Float(f) if (f - 3.14).abs() < 0.001));
+        let val = VmValue::Float(std::f64::consts::PI);
+        assert!(matches!(
+            val,
+            VmValue::Float(f) if (f - std::f64::consts::PI).abs() < f64::EPSILON
+        ));
     }
 
     #[test]
@@ -1099,20 +1095,20 @@ mod tests {
 
     #[test]
     fn test_vm_state_new() {
-        let state = VmState::new();
+        let state = VmState::default();
         assert!(state.stack.is_empty());
     }
 
     #[test]
     fn test_vm_state_push() {
-        let mut state = VmState::new();
+        let mut state = VmState::default();
         state.push(VmValue::Int(42));
         assert!(!state.stack.is_empty());
     }
 
     #[test]
     fn test_vm_state_clone() {
-        let state = VmState::new();
+        let state = VmState::default();
         let cloned = state.clone();
         assert_eq!(state.stack.len(), cloned.stack.len());
     }

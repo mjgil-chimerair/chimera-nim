@@ -1,6 +1,6 @@
 //! Exception system semantics, try/except/finally, raise, and defer support.
 
-use rnim_span::{FileId, Span};
+use rnim_span::Span;
 use std::collections::HashMap;
 
 /// Exception base class hierarchy
@@ -257,6 +257,7 @@ impl EffectSet {
 
 /// Exception checker for semantic analysis
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ExceptionChecker {
     registry: ExceptionRegistry,
     /// Current effect set being computed
@@ -315,13 +316,14 @@ impl Default for ExceptionChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rnim_span::FileId;
 
     #[test]
     fn test_exception_new() {
         let exc = Exception::new(
             ExceptionType::ValueError,
             "Invalid value".to_string(),
-            Span::new(FileId(0), 0, 0),
+            Span::new(FileId::new(0), 0, 0),
         );
         assert!(matches!(exc.typ, ExceptionType::ValueError));
         assert_eq!(exc.message, "Invalid value");
@@ -333,12 +335,12 @@ mod tests {
         let cause = Exception::new(
             ExceptionType::IOError,
             "File not found".to_string(),
-            Span::new(FileId(0), 0, 0),
+            Span::new(FileId::new(0), 0, 0),
         );
         let exc = Exception::new(
             ExceptionType::RuntimeError,
             "Operation failed".to_string(),
-            Span::new(FileId(0), 0, 0),
+            Span::new(FileId::new(0), 0, 0),
         )
         .with_cause(cause);
         assert!(exc.cause.is_some());
@@ -430,7 +432,7 @@ mod tests {
             catch_type: Some(ExceptionType::ValueError),
             bind_name: Some("e".to_string()),
             body: vec!["echo e".to_string()],
-            span: Span::new(FileId(0), 0, 0),
+            span: Span::new(FileId::new(0), 0, 0),
         }];
 
         let result = checker.analyze_try(&try_effects, &excepts);
@@ -460,10 +462,10 @@ mod tests {
                 catch_type: Some(ExceptionType::ValueError),
                 bind_name: None,
                 body: vec!["echo error".to_string()],
-                span: Span::new(FileId(0), 0, 0),
+                span: Span::new(FileId::new(0), 0, 0),
             }],
             finally_body: Some(vec!["echo done".to_string()]),
-            span: Span::new(FileId(0), 0, 0),
+            span: Span::new(FileId::new(0), 0, 0),
         };
         assert_eq!(try_stmt.try_body.len(), 1);
         assert_eq!(try_stmt.excepts.len(), 1);
@@ -474,7 +476,7 @@ mod tests {
     fn test_defer_stmt() {
         let defer_stmt = DeferStmt {
             body: vec!["close()".to_string()],
-            span: Span::new(FileId(0), 0, 0),
+            span: Span::new(FileId::new(0), 0, 0),
         };
         assert_eq!(defer_stmt.body.len(), 1);
     }
@@ -483,7 +485,7 @@ mod tests {
     fn test_exception_checker_try_body() {
         let try_body = vec!["echo 1".to_string()];
         let excepts = vec![ExceptClause {
-            span: Span::new(FileId(0), 0, 0),
+            span: Span::new(FileId::new(0), 0, 0),
             catch_type: Some(ExceptionType::ValueError),
             bind_name: None,
             body: vec!["echo error".to_string()],
@@ -492,7 +494,7 @@ mod tests {
             try_body,
             excepts,
             finally_body: None,
-            span: Span::new(FileId(0), 0, 0),
+            span: Span::new(FileId::new(0), 0, 0),
         };
         assert_eq!(try_stmt.try_body.len(), 1);
         assert_eq!(try_stmt.excepts.len(), 1);

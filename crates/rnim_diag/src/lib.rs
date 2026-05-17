@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 use rnim_allocator as _;
-use rnim_span::{Column, FileId, Line, SourceFile, SourceMap, Span};
+use rnim_span::{Column, Line, SourceMap, Span};
 use std::sync::Arc;
 
 /// Stable diagnostic code registry
@@ -473,6 +473,7 @@ impl Emitter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rnim_span::{FileId, SourceFile};
     use std::sync::Arc;
 
     #[test]

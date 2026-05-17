@@ -16,8 +16,8 @@ impl PrettyPrinter {
         Self {}
     }
 
-    pub fn format(&mut self, _source: &str) -> Result<String, ()> {
-        Ok(_source.to_string())
+    pub fn format(&mut self, _source: &str) -> String {
+        _source.to_string()
     }
 }
 

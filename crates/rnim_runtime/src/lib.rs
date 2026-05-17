@@ -72,6 +72,11 @@ impl NimString {
         self.data.len()
     }
 
+    /// Check if the string is empty
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
     /// Get the reference count
     pub fn refcount(&self) -> usize {
         self.refcount
@@ -201,6 +206,7 @@ impl<T> std::ops::Deref for NimSeq<T> {
 
 /// A Nim reference type
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct NimRef<T> {
     data: Option<T>,
     refcount: usize,
@@ -400,8 +406,9 @@ impl StackTrace {
 /// In production, this would use platform-specific TLS (pthread on Unix, TlsAlloc on Windows).
 /// This simplified version uses a static counter for key allocation.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct TlsKey<T> {
-    key: usize,
+    _key: usize,
     _phantom: std::marker::PhantomData<T>,
 }
 
@@ -414,7 +421,7 @@ impl<T> TlsKey<T> {
         use std::sync::atomic::{AtomicUsize, Ordering};
         static KEY_COUNTER: AtomicUsize = AtomicUsize::new(1);
         Some(TlsKey {
-            key: KEY_COUNTER.fetch_add(1, Ordering::Relaxed),
+            _key: KEY_COUNTER.fetch_add(1, Ordering::Relaxed),
             _phantom: std::marker::PhantomData,
         })
     }

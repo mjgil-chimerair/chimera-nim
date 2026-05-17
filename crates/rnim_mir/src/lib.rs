@@ -3,12 +3,10 @@
 //! This module provides the MIR (Mid-level Intermediate Representation) that serves as the
 //! lowering target from HIR and before backend code generation.
 
-use petgraph::graph::DiGraph;
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_span::{FileId, Span};
-use smallvec::SmallVec;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 /// A MIR basic block
 #[derive(Debug, Clone)]
@@ -100,14 +98,14 @@ impl MirStmt {
         match self {
             MirStmt::Assign { place, .. } => place.span,
             MirStmt::SetDiscriminant { place, .. } => place.span,
-            MirStmt::StorageLive(l, span) | MirStmt::StorageDead(l, span) => *span,
+            MirStmt::StorageLive(_l, span) | MirStmt::StorageDead(_l, span) => *span,
             MirStmt::Call { callee, .. } | MirStmt::TryCall { callee, .. } => callee.span(),
             MirStmt::Drop { place, .. } => place.span,
             MirStmt::Deinit(place) => place.span,
             MirStmt::Assert { condition, .. } => condition.span(),
             MirStmt::FakeRead { place } => place.span,
             MirStmt::Nop => Span::new(FileId(0), 0, 0),
-            MirStmt::ResetRecursion(l, span) => *span,
+            MirStmt::ResetRecursion(_l, span) => *span,
         }
     }
 }
@@ -897,7 +895,7 @@ pub mod optimize {
                             constants.insert(place.local.0, c.clone());
                         }
                         let new_value = replace_with_constants(value, &constants);
-                        if let MirStmt::Assign { place, value } = &mut block.statements[i] {
+                        if let MirStmt::Assign { place: _, value } = &mut block.statements[i] {
                             *value = new_value;
                         }
                     }
@@ -930,10 +928,10 @@ pub mod optimize {
                         place: p1,
                         value: v1,
                     },
-                    MirStmt::Assign { place: p2, .. },
+                    MirStmt::Assign { place: _p2, .. },
                 ) = (&block.statements[i], &block.statements[i + 1])
                 {
-                    if matches!(v1, MirValue::Place(ref place) if place.local == p1.local) {
+                    if matches!(v1, MirValue::Place(place) if place.local == p1.local) {
                         // Could eliminate but simplified for now
                     }
                 }
@@ -1521,7 +1519,7 @@ mod tests {
 
         // Should not panic
         dead_code_elimination(&mut body);
-        assert!(body.blocks.len() >= 1);
+        assert!(!body.blocks.is_empty());
     }
 
     // Task 35: HIR-to-MIR lowering tests
@@ -1548,14 +1546,14 @@ mod tests {
         let cond_block = builder.block(span);
 
         // Loop body block
-        let loop_block = builder.block(span);
+        let _loop_block = builder.block(span);
         builder.stmt(MirStmt::Nop);
         builder.terminator(Terminator::Goto(Box::new(GotoTarget::Block(
             NodeIndex::new(cond_block),
         ))));
 
         // After loop block
-        let after_block = builder.block(span);
+        let _after_block = builder.block(span);
         builder.terminator(Terminator::Return);
 
         // Connect entry to condition

@@ -4,16 +4,15 @@ use rnim_allocator as _;
 use rnim_span::{FileId, Span};
 use rnim_symbols::{
     names_equal, normalize_name, DeclarationKind, ExportStmt, ExportedSymbol, GenericContext,
-    GenericInstantiation, GenericResolver, Import, ImportStmt, ImportedSymbol,
-    MethodCallResolution, MethodCallResolver, MethodCallTarget, ModuleGraph, ModuleId, ModuleKind,
-    ModuleResolver, Name, OverloadCandidate, OverloadSet, OverloadSetBuilder, ResolvedModule,
-    ScopeId, ScopeKind, ScopeTree, SymbolBindingMode, SymbolId, SymbolTable, Visibility,
-    VisibilityChecker,
+    GenericInstantiation, GenericResolver, ImportStmt, ImportedSymbol, MethodCallResolution,
+    MethodCallResolver, MethodCallTarget, ModuleGraph, ModuleId, ModuleKind, ModuleResolver, Name,
+    OverloadCandidate, OverloadSet, OverloadSetBuilder, ResolvedModule, ScopeId, ScopeKind,
+    ScopeTree, SymbolBindingMode, SymbolId, SymbolTable, Visibility, VisibilityChecker,
 };
 use std::path::PathBuf;
 
 fn make_span() -> Span {
-    Span::new(FileId(0), 0, 0)
+    Span::new(FileId::new(0), 0, 0)
 }
 
 #[test]
@@ -37,8 +36,8 @@ fn test_symbol_interning() {
 #[test]
 fn test_symbol_interning_preserves_span() {
     let mut table = SymbolTable::default();
-    let span1 = Span::new(FileId(1), 10, 20);
-    let span2 = Span::new(FileId(2), 30, 40);
+    let span1 = Span::new(FileId::new(1), 10, 20);
+    let span2 = Span::new(FileId::new(2), 30, 40);
 
     let id1 = table.intern("test", span1);
     let id2 = table.intern("test", span2);
@@ -48,7 +47,7 @@ fn test_symbol_interning_preserves_span() {
 
     // But the stored name should have the first span
     let name = table.get(id1).unwrap();
-    assert_eq!(name.span.file, FileId(1));
+    assert_eq!(name.span.file, FileId::new(1));
     assert_eq!(name.span.start, 10);
 }
 
@@ -85,7 +84,7 @@ fn test_resolved_module_kinds() {
                 text: "mod".into(),
                 span: make_span(),
             },
-            FileId(0),
+            FileId::new(0),
             PathBuf::from("/test.nim"),
         );
 
@@ -124,7 +123,7 @@ fn test_scope_id_creation() {
             text: "mod".into(),
             span: make_span(),
         },
-        FileId(0),
+        FileId::new(0),
         PathBuf::from("/test.nim"),
     );
     // ScopeId is created internally - just verify ScopeId type exists
@@ -140,7 +139,7 @@ fn test_module_id_creation() {
             text: "mod".into(),
             span: make_span(),
         },
-        FileId(0),
+        FileId::new(0),
         PathBuf::from("/test.nim"),
     );
     // ModuleId should be usable
@@ -196,7 +195,7 @@ fn test_scope_tree_lookup_symbol() {
 
     // Intern some symbols
     let sym1 = table.intern("foo", make_span());
-    let sym2 = table.intern("bar", make_span());
+    let _sym2 = table.intern("bar", make_span());
 
     // Insert into scope
     tree.insert_symbol(mod_id, "foo".into(), sym1);

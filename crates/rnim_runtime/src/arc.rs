@@ -6,6 +6,8 @@
 //! - Cycle detection infrastructure for ORC (Oblivious Reference Counting)
 //! - Hook integration for destructor scheduling
 
+#![allow(clippy::type_complexity, non_snake_case)]
+
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -139,13 +141,14 @@ pub trait ArcSafe: 'static + Send + Sync {
         None
     }
 
-    fn trace_hook() -> Option<fn(*mut std::ffi::c_void, fn(*mut std::ffi::c_void))> {
+    fn trace_hook() -> Option<TraceHook> {
         None
     }
 }
 
 /// Tracer callback for cycle detection
 pub type TracerCallback = fn(*mut std::ffi::c_void);
+type TraceHook = fn(*mut std::ffi::c_void, TracerCallback);
 
 /// Tracer for visiting references
 pub trait Tracer {
@@ -603,10 +606,11 @@ pub mod orc {
 
     /// ORC Cycle Collector
     #[derive(Debug, Default)]
+    #[allow(non_snake_case)]
     pub struct CycleCollector {
         root_set: RootSet,
         candidate_pool: HashSet<usize>,
-        triColor_pending: VecDeque<usize>,
+        tri_color_pending: VecDeque<usize>,
         cycle_threshold: usize,
     }
 
@@ -615,7 +619,7 @@ pub mod orc {
             CycleCollector {
                 root_set: RootSet::new(),
                 candidate_pool: HashSet::new(),
-                triColor_pending: VecDeque::new(),
+                tri_color_pending: VecDeque::new(),
                 cycle_threshold: CYCLE_CHECK_THRESHOLD,
             }
         }
@@ -647,17 +651,17 @@ pub mod orc {
 
         /// Add to tri-color pending set
         pub fn mark_pending(&mut self, ptr: *mut std::ffi::c_void) {
-            self.triColor_pending.push_back(ptr as usize);
+            self.tri_color_pending.push_back(ptr as usize);
         }
 
         /// Get next pending pointer
         pub fn get_pending(&mut self) -> Option<usize> {
-            self.triColor_pending.pop_front()
+            self.tri_color_pending.pop_front()
         }
 
         /// Check if pending set is empty
         pub fn has_pending(&self) -> bool {
-            !self.triColor_pending.is_empty()
+            !self.tri_color_pending.is_empty()
         }
 
         /// Set cycle detection threshold
@@ -673,7 +677,7 @@ pub mod orc {
         /// Clear all collected state
         pub fn reset(&mut self) {
             self.candidate_pool.clear();
-            self.triColor_pending.clear();
+            self.tri_color_pending.clear();
         }
 
         /// Get root set

@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 /// Thread identifier
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct ThreadId(u64);
 
 impl ThreadId {
@@ -20,25 +20,14 @@ impl ThreadId {
     }
 }
 
-impl Default for ThreadId {
-    fn default() -> Self {
-        ThreadId(0)
-    }
-}
-
 /// Thread priority level
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ThreadPriority {
     Low,
+    #[default]
     Normal,
     High,
     Realtime,
-}
-
-impl Default for ThreadPriority {
-    fn default() -> Self {
-        ThreadPriority::Normal
-    }
 }
 
 /// Thread configuration
@@ -82,9 +71,10 @@ impl ThreadConfig {
 
 /// Thread handle
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Thread {
-    id: ThreadId,
-    name: Option<String>,
+    _id: ThreadId,
+    _name: Option<String>,
 }
 
 /// Get the current thread's ID
@@ -459,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_channel_closed() {
-        let (tx, rx) = channel::<i32>();
+        let (_tx, rx) = channel::<i32>();
         assert!(!rx.is_closed());
     }
 

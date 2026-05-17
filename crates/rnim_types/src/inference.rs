@@ -755,7 +755,7 @@ mod tests {
     #[test]
     fn test_literal_infer_float() {
         assert_eq!(
-            LiteralInfer::infer_float(3.14),
+            LiteralInfer::infer_float(std::f64::consts::PI),
             InferenceType::Primitive(PrimitiveKind::Float64)
         );
     }

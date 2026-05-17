@@ -235,12 +235,7 @@ impl<'a> Parser<'a> {
         // Start root node
         builder.start_node(rowan::SyntaxKind(SyntaxKind::Module as u16));
 
-        loop {
-            let token = match self.lexer.next_token() {
-                Some(t) => t,
-                None => break,
-            };
-
+        while let Some(token) = self.lexer.next_token() {
             match token.kind {
                 TokenKind::Whitespace => {
                     builder.token(
@@ -369,6 +364,7 @@ impl<'a> Parser<'a> {
             None => return,
         };
 
+        #[allow(unreachable_patterns)]
         match token.kind {
             // Built-in types
             TokenKind::Ident => {
@@ -596,22 +592,18 @@ impl<'a> Parser<'a> {
                             rowan::SyntaxKind(SyntaxKind::Token as u16),
                             tok.literal.as_str(),
                         );
-                        loop {
-                            if let Some(next_tok) = self.lexer.next_token() {
-                                if next_tok.kind == TokenKind::RParen {
-                                    builder.token(
-                                        rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                        next_tok.literal.as_str(),
-                                    );
-                                    break;
-                                }
+                        while let Some(next_tok) = self.lexer.next_token() {
+                            if next_tok.kind == TokenKind::RParen {
                                 builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
                                     next_tok.literal.as_str(),
                                 );
-                            } else {
                                 break;
                             }
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                next_tok.literal.as_str(),
+                            );
                         }
                         builder.finish_node();
                     }
@@ -640,24 +632,20 @@ impl<'a> Parser<'a> {
                             rowan::SyntaxKind(SyntaxKind::Token as u16),
                             tok.literal.as_str(),
                         );
-                        loop {
-                            if let Some(next_tok) = self.lexer.next_token() {
-                                if next_tok.kind == TokenKind::RBracket
-                                    || next_tok.kind == TokenKind::RParen
-                                {
-                                    builder.token(
-                                        rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                        next_tok.literal.as_str(),
-                                    );
-                                    break;
-                                }
+                        while let Some(next_tok) = self.lexer.next_token() {
+                            if next_tok.kind == TokenKind::RBracket
+                                || next_tok.kind == TokenKind::RParen
+                            {
                                 builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
                                     next_tok.literal.as_str(),
                                 );
-                            } else {
                                 break;
                             }
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                next_tok.literal.as_str(),
+                            );
                         }
                     }
                 }
@@ -668,26 +656,22 @@ impl<'a> Parser<'a> {
                     rowan::SyntaxKind(SyntaxKind::Token as u16),
                     token.literal.as_str(),
                 );
-                loop {
-                    if let Some(next_tok) = self.lexer.next_token() {
-                        if next_tok.kind == TokenKind::RBracket {
+                while let Some(next_tok) = self.lexer.next_token() {
+                    if next_tok.kind == TokenKind::RBracket {
+                        builder.token(
+                            rowan::SyntaxKind(SyntaxKind::Token as u16),
+                            next_tok.literal.as_str(),
+                        );
+                        break;
+                    }
+                    self.parse_type_with_builder(builder);
+                    if let Some(tok) = self.lexer.next_token() {
+                        if tok.kind == TokenKind::Comma {
                             builder.token(
                                 rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                next_tok.literal.as_str(),
+                                tok.literal.as_str(),
                             );
-                            break;
                         }
-                        self.parse_type_with_builder(builder);
-                        if let Some(tok) = self.lexer.next_token() {
-                            if tok.kind == TokenKind::Comma {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                        }
-                    } else {
-                        break;
                     }
                 }
             }
@@ -697,26 +681,22 @@ impl<'a> Parser<'a> {
                     rowan::SyntaxKind(SyntaxKind::Token as u16),
                     token.literal.as_str(),
                 );
-                loop {
-                    if let Some(next_tok) = self.lexer.next_token() {
-                        if next_tok.kind == TokenKind::RParen {
+                while let Some(next_tok) = self.lexer.next_token() {
+                    if next_tok.kind == TokenKind::RParen {
+                        builder.token(
+                            rowan::SyntaxKind(SyntaxKind::Token as u16),
+                            next_tok.literal.as_str(),
+                        );
+                        break;
+                    }
+                    self.parse_type_with_builder(builder);
+                    if let Some(tok) = self.lexer.next_token() {
+                        if tok.kind == TokenKind::Comma {
                             builder.token(
                                 rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                next_tok.literal.as_str(),
+                                tok.literal.as_str(),
                             );
-                            break;
                         }
-                        self.parse_type_with_builder(builder);
-                        if let Some(tok) = self.lexer.next_token() {
-                            if tok.kind == TokenKind::Comma {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                        }
-                    } else {
-                        break;
                     }
                 }
             }
@@ -762,85 +742,76 @@ impl<'a> Parser<'a> {
                         );
                     } else {
                         // Not a dot, might be the first pragma
-                        match dot_tok.kind {
-                            TokenKind::Ident => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
-                                    dot_tok.literal.as_str(),
-                                );
-                            }
-                            _ => {}
+                        if dot_tok.kind == TokenKind::Ident {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                dot_tok.literal.as_str(),
+                            );
                         }
                     }
                 }
 
                 // Parse pragma content until we hit .}
-                loop {
-                    if let Some(tok) = self.lexer.next_token() {
-                        match tok.kind {
-                            TokenKind::RBrace => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                    tok.literal.as_str(),
-                                );
-                                break;
-                            }
-                            TokenKind::Dot => {
-                                // Check if next token is }
-                                if let Some(next_tok) = self.lexer.next_token() {
-                                    if next_tok.kind == TokenKind::RBrace {
+                while let Some(tok) = self.lexer.next_token() {
+                    match tok.kind {
+                        TokenKind::RBrace => {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                tok.literal.as_str(),
+                            );
+                            break;
+                        }
+                        TokenKind::Dot => {
+                            if let Some(next_tok) = self.lexer.next_token() {
+                                if next_tok.kind == TokenKind::RBrace {
+                                    builder.token(
+                                        rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                        tok.literal.as_str(),
+                                    );
+                                    builder.token(
+                                        rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                        next_tok.literal.as_str(),
+                                    );
+                                    break;
+                                } else {
+                                    builder.token(
+                                        rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                        tok.literal.as_str(),
+                                    );
+                                    if next_tok.kind == TokenKind::Ident {
                                         builder.token(
-                                            rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                            tok.literal.as_str(),
-                                        );
-                                        builder.token(
-                                            rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                            rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
                                             next_tok.literal.as_str(),
                                         );
-                                        break;
-                                    } else {
-                                        // It wasn't }, so continue parsing
-                                        builder.token(
-                                            rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                            tok.literal.as_str(),
-                                        );
-                                        if next_tok.kind == TokenKind::Ident {
-                                            builder.token(
-                                                rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
-                                                next_tok.literal.as_str(),
-                                            );
-                                        }
                                     }
                                 }
                             }
-                            TokenKind::Colon => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                            TokenKind::Comma => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::Token as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                            TokenKind::Ident => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                            TokenKind::String => {
-                                builder.token(
-                                    rowan::SyntaxKind(SyntaxKind::LiteralExpr as u16),
-                                    tok.literal.as_str(),
-                                );
-                            }
-                            _ => {}
                         }
-                    } else {
-                        break;
+                        TokenKind::Colon => {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                tok.literal.as_str(),
+                            );
+                        }
+                        TokenKind::Comma => {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::Token as u16),
+                                tok.literal.as_str(),
+                            );
+                        }
+                        TokenKind::Ident => {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::IdentExpr as u16),
+                                tok.literal.as_str(),
+                            );
+                        }
+                        TokenKind::String => {
+                            builder.token(
+                                rowan::SyntaxKind(SyntaxKind::LiteralExpr as u16),
+                                tok.literal.as_str(),
+                            );
+                        }
+                        _ => {}
                     }
                 }
 
@@ -850,28 +821,25 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expr_tokens(&mut self, builder: &mut GreenNodeBuilder) {
-        loop {
-            if let Some(tok) = self.lexer.next_token() {
-                match tok.kind {
-                    TokenKind::Eof | TokenKind::NewLine => {
-                        break;
-                    }
-                    TokenKind::Whitespace | TokenKind::NewLine => {
-                        // Skip whitespace
-                    }
-                    _ => {
-                        let kind = token_to_syntax_kind(tok.kind);
-                        builder.token(rowan::SyntaxKind(kind as u16), tok.literal.as_str());
-                    }
+        while let Some(tok) = self.lexer.next_token() {
+            match tok.kind {
+                TokenKind::Eof | TokenKind::NewLine => {
+                    break;
                 }
-            } else {
-                break;
+                TokenKind::Whitespace => {
+                    // Skip whitespace
+                }
+                _ => {
+                    let kind = token_to_syntax_kind(tok.kind);
+                    builder.token(rowan::SyntaxKind(kind as u16), tok.literal.as_str());
+                }
             }
         }
     }
 
     /// Parse an expression with proper precedence handling
     /// Returns the minimum precedence needed to stop at
+    #[allow(dead_code)]
     fn parse_expr_with_prec(&mut self, builder: &mut GreenNodeBuilder, min_prec: u8) {
         // Parse prefix operators first
         while let Some(tok) = self.lexer.peek_token() {
@@ -980,6 +948,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Get binary operator precedence (higher = binds tighter)
+    #[allow(dead_code)]
     fn binop_prec(kind: TokenKind) -> (u8, bool) {
         match kind {
             // lowest: as, is
@@ -1774,8 +1743,6 @@ mod tests {
         let mut parser = Parser::new(source, FileId(0));
         // Should not panic on parse
         let _cst = parser.parse_cst();
-        // If we got here without panicking, recovery worked
-        assert!(true);
     }
 
     #[test]

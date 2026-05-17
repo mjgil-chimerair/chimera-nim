@@ -1,5 +1,7 @@
 //! Lifetime hooks: `=destroy`, `=wasMoved`, `=sink`, `=copy`, `=trace`, `=dup`.
 
+#![allow(clippy::should_implement_trait)]
+
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_span::{FileId, Span};
@@ -240,7 +242,7 @@ impl HookRegistry {
             HookKind::Trace,
             HookKind::Dup,
         ] {
-            if let Some(hook) = self.lookup(type_name, kind.clone()) {
+            if let Some(_hook) = self.lookup(type_name, kind.clone()) {
                 has_custom = true;
                 if matches!(kind, HookKind::Trace) {
                     // Trace hooks track other types

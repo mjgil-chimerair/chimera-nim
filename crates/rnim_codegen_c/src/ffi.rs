@@ -182,7 +182,7 @@ impl LinkSpec {
             LinkKind::Dynamic => format!("-l{}", self.name),
             LinkKind::Static => {
                 if let Some(ref path) = self.path {
-                    format!("{}", path)
+                    path.to_string()
                 } else {
                     format!("-l:lib{}.a", self.name)
                 }

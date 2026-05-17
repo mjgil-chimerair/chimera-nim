@@ -84,8 +84,9 @@ jobs:
             if [ -f "$crate" ]; then
               # Only flag actual unsafe blocks or unsafe function declarations, not comments
               if grep -E '^\s*(unsafe\s*\{|unsafe\s+fn|unsafe\s+impl|unsafe\s+struct|unsafe\s+enum)' "$crate" > /dev/null 2>&1; then
+                # Get crate name by going up two directories from the file
                 crate_dir=$(dirname "$crate")
-                crate_name=$(basename "$crate_dir")
+                crate_name=$(basename "$(dirname "$crate_dir")")
                 if [ "$crate_name" != "rnim_runtime" ] && [ "$crate_name" != "rnim_codegen_c" ] && [ "$crate_name" != "rnim_codegen_js" ] && [ "$crate_name" != "rnim_stdlib" ]; then
                   echo "Unauthorized unsafe code in $crate"
                   exit 1

@@ -198,47 +198,47 @@ impl GoldenRunner {
         }
     }
 
-    fn run_compile_pass(&self, test_case: &TestCase) -> TestResult {
+    fn run_compile_pass(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement actual compilation check
         TestResult::Passed
     }
 
-    fn run_compile_fail(&self, test_case: &TestCase) -> TestResult {
+    fn run_compile_fail(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement actual compilation failure check
         TestResult::Passed
     }
 
-    fn run_run_pass(&self, test_case: &TestCase) -> TestResult {
+    fn run_run_pass(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement actual run check
         TestResult::Passed
     }
 
-    fn run_run_fail(&self, test_case: &TestCase) -> TestResult {
+    fn run_run_fail(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement actual runtime failure check
         TestResult::Passed
     }
 
-    fn run_parser_test(&self, test_case: &TestCase) -> TestResult {
+    fn run_parser_test(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement parser test
         TestResult::Passed
     }
 
-    fn run_sema_test(&self, test_case: &TestCase) -> TestResult {
+    fn run_sema_test(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement semantic analysis test
         TestResult::Passed
     }
 
-    fn run_macro_test(&self, test_case: &TestCase) -> TestResult {
+    fn run_macro_test(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement macro test
         TestResult::Passed
     }
 
-    fn run_backend_test(&self, test_case: &TestCase) -> TestResult {
+    fn run_backend_test(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement backend test
         TestResult::Passed
     }
 
-    fn run_docgen_test(&self, test_case: &TestCase) -> TestResult {
+    fn run_docgen_test(&self, _test_case: &TestCase) -> TestResult {
         // TODO: Implement docgen test
         TestResult::Passed
     }

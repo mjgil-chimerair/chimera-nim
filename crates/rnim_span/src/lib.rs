@@ -435,6 +435,16 @@ impl SourceMap {
     }
 }
 
+#[allow(dead_code)]
+fn overlaps(a: Span, b: Span) -> bool {
+    a.file == b.file && a.start < b.end && b.start < a.end
+}
+
+#[allow(dead_code)]
+fn touches(a: Span, b: Span) -> bool {
+    a.file == b.file && (a.end == b.start || b.end == a.start)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -871,14 +881,4 @@ mod tests {
         assert_eq!(file.byte_to_line_col(4), Some((Line(0), Column(2))));
         assert_eq!(file.line_col_to_byte(Line(0), Column(2)), Some(4));
     }
-}
-
-#[allow(dead_code)]
-fn overlaps(a: Span, b: Span) -> bool {
-    a.file == b.file && a.start < b.end && b.start < a.end
-}
-
-#[allow(dead_code)]
-fn touches(a: Span, b: Span) -> bool {
-    a.file == b.file && (a.end == b.start || b.end == a.start)
 }

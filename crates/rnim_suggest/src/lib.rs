@@ -9,8 +9,8 @@ impl SuggestServer {
         Self {}
     }
 
-    pub fn handle_query(&mut self, _query: &str) -> Result<String, ()> {
-        Ok(String::new())
+    pub fn handle_query(&mut self, _query: &str) -> String {
+        String::new()
     }
 }
 

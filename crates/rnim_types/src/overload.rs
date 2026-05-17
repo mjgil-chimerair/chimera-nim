@@ -4,7 +4,6 @@
 //! based on argument types, conversion costs, and other factors.
 
 use rnim_span::Span;
-use std::collections::{HashMap, HashSet};
 
 /// Score for a candidate match
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -220,10 +219,8 @@ impl OverloadResolver {
         let params = &candidate.param_types;
 
         // Check for varargs
-        if candidate.is_variadic {
-            if arg_types.len() >= params.len() - 1 {
-                return MatchScore::VarargsMatch;
-            }
+        if candidate.is_variadic && arg_types.len() >= params.len() - 1 {
+            return MatchScore::VarargsMatch;
         }
 
         // Check argument count
@@ -241,7 +238,7 @@ impl OverloadResolver {
 
         // Score each argument
         let mut total_cost = 0;
-        let mut has_generic = false;
+        let has_generic = false;
         let mut has_user_conversion = false;
         let mut has_unsafe_conversion = false;
 

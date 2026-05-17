@@ -4,6 +4,8 @@
 //! schema, source hashing, offline mode support, and path override
 //! capabilities.
 
+#![allow(dead_code)]
+
 use crate::{NimbleError, NimbleManifest, PackageGraph, ResolvedPackage};
 use rnim_span::Span;
 use serde::{Deserialize, Serialize};
@@ -132,7 +134,7 @@ impl CacheKey {
         // Deterministic cache layout: cache/name/version/hash/
         base.join(&self.name)
             .join(&self.version)
-            .join(&self.source_hash[..8].to_string())
+            .join(&self.source_hash[..8])
     }
 }
 
@@ -307,7 +309,7 @@ pub fn generate_cache_key(manifest: &NimbleManifest, source_hash: &str) -> Cache
 pub fn build_lockfile(graph: &PackageGraph, nim_version: &str, cache_path: PathBuf) -> Lockfile {
     let mut lockfile = Lockfile::new(nim_version, cache_path);
 
-    for (_name, pkg) in graph.packages() {
+    for pkg in graph.packages().values() {
         let entry = create_lockfile_entry(pkg, "", "");
         let key = format!("{}#{}", entry.name, entry.version);
         lockfile.packages.insert(key, entry);

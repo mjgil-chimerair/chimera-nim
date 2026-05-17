@@ -5,7 +5,7 @@ use rnim_allocator as _;
 use rnim_span::{FileId, Span};
 use rustc_hash::FxHashMap;
 use slotmap::SlotMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 slotmap::new_key_type! {
     pub struct SymbolId;
@@ -55,15 +55,14 @@ impl SymbolTable {
     }
 
     pub fn add_module(&mut self, name: Name, file: FileId, path: PathBuf) -> ModuleId {
-        let id = self.modules.insert(ModuleSymbol {
+        self.modules.insert(ModuleSymbol {
             name,
             file,
             path,
             exports: Vec::new(),
             imports: Vec::new(),
             is_virtual: false,
-        });
-        id
+        })
     }
 
     pub fn get_module(&self, id: ModuleId) -> Option<&ModuleSymbol> {
@@ -144,14 +143,14 @@ impl ModuleResolver {
     }
 
     /// Resolve a module from an import statement
-    pub fn resolve(&mut self, current_file: &PathBuf, module_name: &str) -> Option<ResolvedModule> {
+    pub fn resolve(&mut self, current_file: &Path, module_name: &str) -> Option<ResolvedModule> {
         // Check cache first
         if let Some(cached) = self.resolved.get(module_name) {
             return Some(cached.clone());
         }
 
         // Try relative to current file
-        let current_dir = current_file.parent().unwrap_or(current_file.as_path());
+        let current_dir = current_file.parent().unwrap_or_else(|| Path::new(""));
         let relative_path = current_dir.join(format!("{}.nim", module_name.replace('.', "/")));
 
         for search_path in &self.search_paths {
@@ -203,7 +202,7 @@ impl ModuleResolver {
     /// Resolve a from-import (e.g., "from foo import bar")
     pub fn resolve_from(
         &mut self,
-        current_file: &PathBuf,
+        current_file: &Path,
         module_name: &str,
     ) -> Option<ResolvedModule> {
         self.resolve(current_file, module_name)
@@ -278,18 +277,18 @@ pub struct VisibilityChecker;
 
 impl VisibilityChecker {
     /// Check if a symbol is visible to a given importing module
-    pub fn is_visible(module_id: ModuleId, symbol_id: SymbolId, target: ModuleId) -> bool {
+    pub fn is_visible(_module_id: ModuleId, _symbol_id: SymbolId, _target: ModuleId) -> bool {
         // For now, all exported symbols are public
         // This will be enhanced with proper visibility rules
         true
     }
 
     /// Filter symbols based on visibility
-    pub fn filter_visible<'a>(
+    pub fn filter_visible(
         module_id: ModuleId,
-        symbols: &'a [(Box<str>, SymbolId)],
+        symbols: &[(Box<str>, SymbolId)],
         target: ModuleId,
-    ) -> Vec<&'a (Box<str>, SymbolId)> {
+    ) -> Vec<&(Box<str>, SymbolId)> {
         symbols
             .iter()
             .filter(|(_, sym)| Self::is_visible(module_id, *sym, target))
@@ -456,8 +455,9 @@ pub struct OverloadCandidate {
 }
 
 /// Kind of declaration for overload tracking
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DeclarationKind {
+    #[default]
     Proc,
     Func,
     Method,
@@ -469,12 +469,6 @@ pub enum DeclarationKind {
     Var,
     Let,
     Const,
-}
-
-impl Default for DeclarationKind {
-    fn default() -> Self {
-        DeclarationKind::Proc
-    }
 }
 
 /// Overload set builder for constructing overload sets
@@ -490,6 +484,7 @@ impl OverloadSetBuilder {
     }
 
     /// Add a candidate to an overload set
+    #[allow(clippy::too_many_arguments)]
     pub fn add_candidate(
         &mut self,
         name: Box<str>,
@@ -559,17 +554,19 @@ impl SymbolTable {
     /// Check if a symbol is exported with the `*` marker
     pub fn is_exported(&self, module: ModuleId, symbol: SymbolId) -> bool {
         let module_symbol = self.modules.get(module);
-        module_symbol.map_or(false, |m| m.exports.contains(&symbol))
+        module_symbol.is_some_and(|m| m.exports.contains(&symbol))
     }
 }
 
 /// Represents a lexical scope in the source code
 #[derive(Debug, Clone)]
+#[allow(non_snake_case)]
 pub struct Scope {
     pub id: ScopeId,
     pub parent: Option<ScopeId>,
     pub kind: ScopeKind,
     pub symbols: FxHashMap<Box<str>, SymbolId>,
+    #[allow(non_snake_case)]
     pub HygieneId: u32,
 }
 
@@ -586,13 +583,14 @@ impl Scope {
 }
 
 /// Kind of scope
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum ScopeKind {
     /// Global/module scope
     Module,
     /// Routine body scope (proc, func, method, iterator)
     Routine,
     /// Block scope (discard, while, for, etc.)
+    #[default]
     Block,
     /// Type scope (object fields, enum values)
     Type,
@@ -600,12 +598,6 @@ pub enum ScopeKind {
     Generic,
     /// Temporary scope for import/export
     Temporary,
-}
-
-impl Default for ScopeKind {
-    fn default() -> Self {
-        ScopeKind::Block
-    }
 }
 
 /// Represents the scope tree for a module
@@ -747,9 +739,9 @@ pub struct MethodCallResolver;
 impl MethodCallResolver {
     /// Resolve a method call with a known receiver type
     pub fn resolve(
-        receiver_type: &str,
+        _receiver_type: &str,
         method_name: &str,
-        arg_count: usize,
+        _arg_count: usize,
         overload_sets: &OverloadSetBuilder,
     ) -> MethodCallResolution {
         // Check if there's a callable with this name in scope
@@ -784,7 +776,7 @@ impl MethodCallResolver {
     }
 
     /// Check if a method call could be a field access (requires type info)
-    pub fn could_be_field(receiver_type: &str, field_name: &str) -> bool {
+    pub fn could_be_field(_receiver_type: &str, _field_name: &str) -> bool {
         // Would need type information to determine this properly
         // For now, return true as field access is the fallback
         true
@@ -805,9 +797,10 @@ pub struct GenericInstantiation {
 }
 
 /// Symbol binding mode - how a symbol is bound in a generic context
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SymbolBindingMode {
     /// Open binding - symbol can be resolved to different things at each instantiation
+    #[default]
     Open,
     /// Closed binding - symbol is bound once at definition and fixed
     Closed,
@@ -817,14 +810,8 @@ pub enum SymbolBindingMode {
     Mixin,
 }
 
-impl Default for SymbolBindingMode {
-    fn default() -> Self {
-        SymbolBindingMode::Open
-    }
-}
-
 /// Generic symbol resolution context
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct GenericContext {
     /// The definition scope of the generic
     pub definition_scope: ScopeId,
@@ -836,18 +823,6 @@ pub struct GenericContext {
     pub bindings: FxHashMap<SymbolId, SymbolBindingMode>,
     /// Instantiations of this generic
     pub instantiations: Vec<GenericInstantiation>,
-}
-
-impl Default for GenericContext {
-    fn default() -> Self {
-        GenericContext {
-            definition_scope: ScopeId::default(),
-            instantiation_scope: ScopeId::default(),
-            type_params: Vec::new(),
-            bindings: FxHashMap::default(),
-            instantiations: Vec::new(),
-        }
-    }
 }
 
 impl GenericContext {
@@ -908,7 +883,7 @@ pub struct GenericResolver;
 impl GenericResolver {
     /// Determine the binding mode for a symbol in a generic context
     pub fn determine_binding_mode(
-        symbol: SymbolId,
+        _symbol: SymbolId,
         is_type_param: bool,
         is_explicitly_bound: bool,
         is_mixin: bool,
@@ -939,7 +914,7 @@ impl GenericResolver {
     pub fn resolve_in_context(
         symbol: SymbolId,
         context: &GenericContext,
-        current_scope: ScopeId,
+        _current_scope: ScopeId,
     ) -> Option<SymbolId> {
         // If the symbol is open in this context, we need to look it up
         // in the current instantiation scope instead of the definition scope
@@ -1206,7 +1181,7 @@ mod tests {
 
     #[test]
     fn test_module_graph_has_cycle_no_cycles() {
-        let mut graph = ModuleGraph::new();
+        let graph = ModuleGraph::new();
         // Simple case: single module with no imports
         // Or two modules A -> B with no cycle
         // Just verify the function runs without panic
@@ -1387,7 +1362,7 @@ mod tests {
             FileId::new(0),
             PathBuf::from("test.nim"),
         );
-        if let Some(module) = table.get_module(module_id) {
+        if table.get_module(module_id).is_some() {
             let mut exports = table.get_module(module_id).unwrap().exports.clone();
             exports.push(foo_id);
             exports.push(bar_id);
@@ -1442,7 +1417,6 @@ mod tests {
     #[test]
     fn test_interned_symbol_identity() {
         let mut table = SymbolTable::default();
-        let span = Span::new(FileId::new(0), 0, 5);
 
         // Intern same identifier multiple times from different locations
         let span1 = Span::new(FileId::new(0), 0, 5);

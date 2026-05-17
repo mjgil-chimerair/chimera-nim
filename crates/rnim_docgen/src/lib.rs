@@ -3,24 +3,19 @@
 //! This module provides HTML/JSON docs generation from exported symbols,
 //! doc comments, runnable examples metadata, module index, and cross-links.
 
-use pulldown_cmark::{html, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{html, Parser};
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_span::{FileId, Span};
 use std::collections::HashMap;
 
 /// Documentation output format
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DocFormat {
+    #[default]
     Html,
     Json,
     Markdown,
-}
-
-impl Default for DocFormat {
-    fn default() -> Self {
-        DocFormat::Html
-    }
 }
 
 /// A documented symbol (procedure, type, constant, etc.)
@@ -277,7 +272,7 @@ impl DocBuilder {
     fn build_json(&self) -> Result<String, DocError> {
         let mut modules_json: Vec<String> = Vec::new();
 
-        for (_name, module) in &self.modules {
+        for module in self.modules.values() {
             let mut symbols_json: Vec<String> = Vec::new();
             for symbol in &module.symbols {
                 let params: Vec<String> = symbol
@@ -339,7 +334,7 @@ impl DocBuilder {
                     for param in &symbol.parameters {
                         output.push_str(&format!("- `{}` ({})\n", param.name, param.doc_type));
                     }
-                    output.push_str("\n");
+                    output.push('\n');
                 }
 
                 if let Some(ref ret) = symbol.returns {
@@ -428,7 +423,6 @@ pub fn parse_doc_comment(comment: &str) -> DocSymbol {
 
     // Parse Nim doc comments (##)
     let lines: Vec<&str> = comment.lines().collect();
-    let mut in_description = false;
     let mut description_parts = Vec::new();
 
     for line in lines {
@@ -440,19 +434,12 @@ pub fn parse_doc_comment(comment: &str) -> DocSymbol {
         if trimmed.starts_with("**") && trimmed.ends_with("**") {
             let section = &trimmed[2..trimmed.len() - 2].to_lowercase();
             match section.as_str() {
-                "params" | "parameters" => {
-                    in_description = false;
-                }
+                "params" | "parameters" => {}
                 "return" | "returns" => {
-                    in_description = false;
                     symbol.returns = Some(trimmed.to_string());
                 }
-                "see also" | "see" => {
-                    in_description = false;
-                }
-                "example" | "examples" => {
-                    in_description = false;
-                }
+                "see also" | "see" => {}
+                "example" | "examples" => {}
                 _ => {}
             }
         } else if !trimmed.starts_with("**") {
@@ -647,8 +634,10 @@ mod tests {
 
     #[test]
     fn test_doc_builder_build_json() {
-        let mut config = DocConfig::default();
-        config.format = DocFormat::Json;
+        let config = DocConfig {
+            format: DocFormat::Json,
+            ..Default::default()
+        };
         let mut builder = DocBuilder::new(config);
         builder.set_module("testmodule", FileId(0));
 
@@ -661,8 +650,10 @@ mod tests {
 
     #[test]
     fn test_doc_builder_build_markdown() {
-        let mut config = DocConfig::default();
-        config.format = DocFormat::Markdown;
+        let config = DocConfig {
+            format: DocFormat::Markdown,
+            ..Default::default()
+        };
         let mut builder = DocBuilder::new(config);
         builder.set_module("testmodule", FileId(0));
 

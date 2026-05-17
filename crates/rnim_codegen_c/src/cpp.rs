@@ -3,10 +3,8 @@
 //! This module provides dialect selection, name mangling, and FFI
 //! support for C++ and Objective-C backends.
 
-use rnim_span::Span;
-
 /// C++ dialect/standard selection
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum CppDialect {
     /// C++98
     Cpp98,
@@ -15,17 +13,12 @@ pub enum CppDialect {
     /// C++14
     Cpp14,
     /// C++17
+    #[default]
     Cpp17,
     /// C++20
     Cpp20,
     /// C++23
     Cpp23,
-}
-
-impl Default for CppDialect {
-    fn default() -> Self {
-        CppDialect::Cpp17
-    }
 }
 
 impl CppDialect {
@@ -146,18 +139,13 @@ impl CppNameMangler {
 }
 
 /// Objective-C backend mode
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum ObjCMode {
     /// Traditional Objective-C
+    #[default]
     ObjC,
     /// Objective-C++ (C++ with Objective-C)
     ObjCPlusPlus,
-}
-
-impl Default for ObjCMode {
-    fn default() -> Self {
-        ObjCMode::ObjC
-    }
 }
 
 /// Objective-C selector representation
@@ -240,7 +228,7 @@ impl ObjCEmitter {
         param_type: Option<&str>,
     ) -> String {
         let method_type = if is_class_method { "+" } else { "-" };
-        let ret = format!("({})", return_type);
+        let _ret = format!("({})", return_type);
 
         if let Some(param) = param_type {
             let sel_key = selector.key();

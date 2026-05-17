@@ -5,7 +5,6 @@
 //! - Licensing status
 //! - Supported/deferred status with reasons
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// Source of a test case

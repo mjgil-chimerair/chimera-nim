@@ -2,10 +2,8 @@
 
 #[cfg(test)]
 use rnim_allocator as _;
-use rnim_span::{FileId, Span};
-use rnim_types::{
-    is_float, is_integral, LiteralValue, PrimitiveKind, SubrangeType, TyId, Type, TypeCtx,
-};
+use rnim_span::Span;
+use rnim_types::{is_integral, LiteralValue, PrimitiveKind, SubrangeType, TyId, Type, TypeCtx};
 use std::fmt::{self, Debug};
 
 pub mod check;
@@ -159,7 +157,9 @@ impl UnifyCtx {
         let ty2_clone = ty2.clone();
 
         match (ty1, ty2) {
-            (Type::Primitive(p1), Type::Primitive(p2)) => {
+            (Type::Primitive(p1), Type::Primitive(p2)) =>
+            {
+                #[allow(clippy::if_same_then_else)]
                 if p1.kind == p2.kind {
                     UnifyResult::Success
                 } else if p1.is_signed == p2.is_signed && p1.size == p2.size {
@@ -308,8 +308,6 @@ impl UnifyCtx {
         if self.unify(ty1, ty2) == UnifyResult::Success {
             if self.is_subtype(ty1, ty2) {
                 Some(ty2)
-            } else if self.is_subtype(ty2, ty1) {
-                Some(ty1)
             } else {
                 Some(ty1)
             }
@@ -770,10 +768,12 @@ impl InheritanceSolver {
         }
 
         let sub_type = self.type_ctx.get(sub);
-        if let Some(Type::Object { base, .. }) = sub_type {
-            if let Some(base_id) = base {
-                return self.is_subtype(*base_id, sup);
-            }
+        if let Some(Type::Object {
+            base: Some(base_id),
+            ..
+        }) = sub_type
+        {
+            return self.is_subtype(*base_id, sup);
         }
         false
     }
@@ -963,7 +963,7 @@ impl ExprChecker {
             "-" => {
                 // Unary minus requires numeric type (integral or float)
                 if let Some(ty) = self.type_ctx.get(operand_ty) {
-                    let is_numeric = match &*ty {
+                    let is_numeric = match ty {
                         Type::Primitive(p) => matches!(
                             p.kind,
                             PrimitiveKind::Int
@@ -1101,6 +1101,7 @@ impl Default for ExprChecker {
 }
 
 /// Statement semantic checker
+#[allow(dead_code)]
 pub struct StmtChecker {
     type_ctx: TypeCtx,
     expr_checker: ExprChecker,
@@ -1222,13 +1223,12 @@ impl StmtChecker {
             // Check for compatible types (e.g., ref assignment)
             let target_type = self.type_ctx.get(target_ty);
             let value_type = self.type_ctx.get(value_ty);
-            match (target_type, value_type) {
-                (Some(Type::Ref { inner: t_inner }), Some(Type::Ref { inner: v_inner })) => {
-                    if *t_inner == *v_inner {
-                        return Ok(());
-                    }
+            if let (Some(Type::Ref { inner: t_inner }), Some(Type::Ref { inner: v_inner })) =
+                (target_type, value_type)
+            {
+                if *t_inner == *v_inner {
+                    return Ok(());
                 }
-                _ => {}
             }
             Err(format!("Cannot assign {:?} to {:?}", value_ty, target_ty))
         }
@@ -1943,7 +1943,7 @@ mod tests {
 
     #[test]
     fn test_stmt_checker_assignment() {
-        let mut checker = StmtChecker::new();
+        let checker = StmtChecker::new();
         let int_id = checker
             .type_ctx()
             .get_primitive(PrimitiveKind::Int)
@@ -1992,7 +1992,7 @@ mod tests {
             .type_ctx()
             .get_primitive(PrimitiveKind::Int)
             .unwrap();
-        checker.add_symbol("foo".into(), int_id, Span::new(FileId(0), 0, 0));
+        checker.add_symbol("foo".into(), int_id, Span::new(rnim_span::FileId(0), 0, 0));
         assert!(checker.check_duplicate("foo").is_err());
     }
 

@@ -3,6 +3,8 @@
 //! This module provides stdlib module status tracking, compatibility policy,
 //! and module registry for the Rust Nim compiler.
 
+#![allow(clippy::new_without_default)]
+
 use std::collections::HashMap;
 
 /// Stdlib module support status
@@ -458,7 +460,7 @@ mod tests {
     #[test]
     fn test_stdlib_registry_new() {
         let registry = StdlibRegistry::new();
-        assert!(registry.modules.len() > 0);
+        assert!(!registry.modules.is_empty());
     }
 
     #[test]

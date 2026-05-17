@@ -3,6 +3,8 @@
 //! This module provides the core types, operators, hooks, and magic
 //! symbols required by the Nim compiler for basic operation.
 
+#![allow(non_snake_case, clippy::approx_constant, clippy::excessive_precision)]
+
 /// System module version
 pub const VERSION: &str = "2.2.0";
 

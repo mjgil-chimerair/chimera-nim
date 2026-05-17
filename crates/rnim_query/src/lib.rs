@@ -8,6 +8,8 @@
 //! - Type checking queries
 //! - Symbol resolution queries
 
+#![allow(unused_imports)]
+
 #[cfg(test)]
 use rnim_allocator as _;
 use rnim_span::{FileId, Span};

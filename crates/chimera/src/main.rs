@@ -190,7 +190,7 @@ fn run_check(files: &[PathBuf]) -> Result<()> {
         anyhow::bail!("No input files specified");
     }
 
-    let mut db = rnim_sema::SemanticDb::new();
+    let _db = rnim_sema::SemanticDb::new();
 
     for file in files {
         println!("Checking {}", file.display());
@@ -230,8 +230,10 @@ fn run_doc(files: &[PathBuf]) -> Result<()> {
             .map(|s| s.to_string())
             .unwrap_or_else(|| "module".to_string());
 
-        let mut config = DocConfig::default();
-        config.format = DocFormat::Html;
+        let config = DocConfig {
+            format: DocFormat::Html,
+            ..Default::default()
+        };
         let mut builder = DocBuilder::new(config);
         builder.set_module(&file_name, FileId(0));
 
@@ -280,7 +282,7 @@ fn run_pretty(files: &[PathBuf]) -> Result<()> {
         let content = std::fs::read_to_string(file)?;
         let mut lexer = Lexer::new(&content, FileId(0));
         let mut token_count = 0;
-        while let Some(_) = lexer.next_token() {
+        while lexer.next_token().is_some() {
             token_count += 1;
         }
 
@@ -303,17 +305,11 @@ fn run_suggest(file: &PathBuf) -> Result<()> {
     let mut server = SuggestServer::new();
 
     let query = format!("suggest {}", file.to_string_lossy());
-    match server.handle_query(&query) {
-        Ok(result) => {
-            if result.is_empty() {
-                println!("  No suggestions available");
-            } else {
-                println!("  Suggestions: {}", result);
-            }
-        }
-        Err(_) => {
-            eprintln!("  Error running suggest");
-        }
+    let result = server.handle_query(&query);
+    if result.is_empty() {
+        println!("  No suggestions available");
+    } else {
+        println!("  Suggestions: {}", result);
     }
 
     println!("  File: {} ({} bytes)", file.display(), content.len());

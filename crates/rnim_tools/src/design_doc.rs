@@ -2,8 +2,6 @@
 //!
 //! Generates markdown status reports for the rnim project.
 
-use std::collections::HashMap;
-
 /// Generate a design document status report
 pub fn generate_status_report() -> String {
     let mut report = String::new();

@@ -16,22 +16,17 @@ static TEST_ALLOCATOR: cap::Cap<alloc::System> =
 
 #[cfg(test)]
 mod tests {
-    use cap::Cap;
-    use std::alloc::{GlobalAlloc, System};
-
-    const LOW_LIMIT: usize = 16 * 1024 * 1024; // 16 MB for simple test
-
     #[test]
     fn test_allocator_enforces_limit() {
         // This test verifies the allocator is working by allocating under the test limit
-        let small_alloc: Vec<u8> = std::iter::repeat(0_u8).take(1024).collect();
+        let small_alloc: Vec<u8> = std::iter::repeat_n(0_u8, 1024).collect();
         assert_eq!(small_alloc.len(), 1024);
     }
 
     #[test]
     fn test_small_allocations_pass() {
         // Allocating 8MB should succeed
-        let bytes: Vec<u8> = std::iter::repeat(0_u8).take(8 * 1024 * 1024).collect();
+        let bytes: Vec<u8> = std::iter::repeat_n(0_u8, 8 * 1024 * 1024).collect();
         assert_eq!(bytes.len(), 8 * 1024 * 1024);
     }
 }

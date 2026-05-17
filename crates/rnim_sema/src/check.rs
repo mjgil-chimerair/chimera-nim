@@ -4,7 +4,6 @@
 //! where needed, and diagnostics without code generation.
 
 use rnim_span::{FileId, Span};
-use std::collections::HashMap;
 use std::path::Path;
 
 /// Check mode status
@@ -37,18 +36,13 @@ pub struct CheckDiagnostic {
 }
 
 /// Diagnostic severity
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DiagnosticSeverity {
+    #[default]
     Error,
     Warning,
     Info,
     Hint,
-}
-
-impl Default for DiagnosticSeverity {
-    fn default() -> Self {
-        DiagnosticSeverity::Error
-    }
 }
 
 /// Check pass configuration
@@ -153,8 +147,8 @@ impl CheckRunner {
     /// Run semantic check on a file
     pub fn check_sema(&mut self, file_id: FileId, content: &str) -> CheckResult {
         // Basic syntax validation
-        let mut line_num = 1u32;
-        let mut col = 0u32;
+        let mut _line_num = 1u32;
+        let mut _col = 0u32;
         let mut in_string = false;
         let mut string_char = '\0';
         let mut brace_depth = 0i32;
@@ -162,11 +156,8 @@ impl CheckRunner {
 
         for (i, c) in content.char_indices() {
             if c == '\n' {
-                line_num += 1;
-                col = 0;
                 continue;
             }
-            col += 1;
 
             if in_string {
                 if c == string_char
@@ -490,12 +481,8 @@ when isMainModule:
     fn test_check_content_multiple_errors() {
         let content = "{ } )"; // Two errors: unclosed { and unclosed )
         let result = check_content(content, "test.nim");
-        // This should have errors - need to verify implementation
-        // Currently the simple brace/paren check only catches unbalanced
-        // if they don't balance out (1 open, 1 closed = balanced)
-        // Actually { } is balanced, but ) has no matching (
-        assert!(result.status == CheckStatus::Errors || result.error_count >= 0);
-        // Allow both
+        assert_eq!(result.status, CheckStatus::Errors);
+        assert!(result.error_count > 0);
     }
 
     #[test]
@@ -560,8 +547,7 @@ when isMainModule:
         let content = "proc test() = discard";
         let mut runner = CheckRunner::with_default_config();
         let result = runner.check_sema(FileId(0), content);
-        // Valid proc should pass or have minimal warnings
-        assert!(result.status == CheckStatus::Ok || result.warning_count >= 0);
+        assert_eq!(result.status, CheckStatus::Ok);
     }
 
     #[test]
@@ -603,25 +589,25 @@ when isMainModule:
     fn test_check_content_for_statement() {
         let content = "for i in 0..10: discard";
         let result = check_content(content, "test.nim");
-        assert!(result.status == CheckStatus::Ok || result.error_count >= 0);
+        assert_eq!(result.status, CheckStatus::Ok);
     }
 
     #[test]
     fn test_check_content_case_statement() {
         let content = "case 1: of 0: discard else: discard";
         let result = check_content(content, "test.nim");
-        assert!(result.status == CheckStatus::Ok || result.error_count >= 0);
+        assert_eq!(result.status, CheckStatus::Ok);
     }
 
     #[test]
     fn test_check_content_try_except() {
         let content = "try: discard except: discard";
         let result = check_content(content, "test.nim");
-        assert!(result.status == CheckStatus::Ok || result.error_count >= 0);
+        assert_eq!(result.status, CheckStatus::Ok);
     }
 
     #[test]
-    fn test_check_contentImport_statement() {
+    fn test_check_content_import_statement() {
         let content = "import std/sets";
         let result = check_content(content, "test.nim");
         assert_eq!(result.status, CheckStatus::Ok);
@@ -735,6 +721,6 @@ when isMainModule:
     fn test_check_content_defer_statement() {
         let content = "var f = open(\"test.txt\"); defer: close(f)";
         let result = check_content(content, "test.nim");
-        assert!(result.status == CheckStatus::Ok || result.error_count >= 0);
+        assert_eq!(result.status, CheckStatus::Ok);
     }
 }

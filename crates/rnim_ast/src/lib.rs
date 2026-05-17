@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 use rnim_allocator as _;
-use rnim_span::{FileId, Span};
+use rnim_span::Span;
 
 /// An AST node wrapper
 #[derive(Debug, Clone)]
@@ -109,6 +109,7 @@ impl SyntaxKind {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rnim_span::FileId;
 
     #[test]
     fn test_syntax_kind_as_str() {
@@ -162,7 +163,6 @@ mod tests {
 
     #[test]
     fn test_syntax_kind_variants() {
-        use std::collections::HashSet;
         let mut seen = std::collections::HashSet::new();
         for variant in [
             SyntaxKind::Source,

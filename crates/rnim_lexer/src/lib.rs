@@ -438,7 +438,7 @@ impl<'a> Lexer<'a> {
 
         // Check for decimal point followed by digit
         if let Some((i, '.')) = self.chars.peek().copied() {
-            let remaining = &self.source[i as usize + 1..];
+            let remaining = &self.source[i + 1..];
             if !remaining.is_empty() {
                 let next_char = remaining.chars().next().unwrap();
                 if next_char.is_ascii_digit() || next_char == '_' {
@@ -463,7 +463,7 @@ impl<'a> Lexer<'a> {
         // Check for exponent
         if let Some((i, c)) = self.chars.peek().copied() {
             if c == 'e' || c == 'E' {
-                let remaining = &self.source[i as usize + 1..];
+                let remaining = &self.source[i + 1..];
                 if !remaining.is_empty() {
                     let next_char = remaining.chars().next().unwrap();
                     if next_char == '+' || next_char == '-' || next_char.is_ascii_digit() {
@@ -528,11 +528,7 @@ impl<'a> Lexer<'a> {
             has_unsigned_suffix = true;
             self.offset = end + 1;
             end = self.offset;
-        } else if suffix_lower.starts_with("f32") {
-            has_float_suffix = true;
-            self.offset = end + 3;
-            end = self.offset;
-        } else if suffix_lower.starts_with("f64") {
+        } else if suffix_lower.starts_with("f32") || suffix_lower.starts_with("f64") {
             has_float_suffix = true;
             self.offset = end + 3;
             end = self.offset;
@@ -565,7 +561,7 @@ impl<'a> Lexer<'a> {
                 if let Some((j, _)) = self.chars.next() {
                     end = j as u32 + 1;
                     if let Some((k, 'x')) = self.chars.peek().copied() {
-                        if k as usize + 2 < self.source.len() {
+                        if k + 2 < self.source.len() {
                             self.offset = k as u32 + 3;
                             end = self.offset;
                             // Skip 2 hex digits
@@ -599,8 +595,7 @@ impl<'a> Lexer<'a> {
 
         // Check for doc comment marker (##)
         if let Some((i, '#')) = self.chars.peek().copied() {
-            if i as usize + 1 < self.source.len() && self.source.as_bytes()[i as usize + 1] == b'#'
-            {
+            if i + 1 < self.source.len() && self.source.as_bytes()[i + 1] == b'#' {
                 // This is a doc comment
                 is_doc_comment = true;
                 end = i as u32 + 2;
@@ -611,11 +606,11 @@ impl<'a> Lexer<'a> {
         // Consume the rest of the line (and following lines for doc comments)
         if is_doc_comment {
             // Doc comments can span multiple lines
-            while let Some((i, c)) = self.chars.next() {
+            for (i, c) in self.chars.by_ref() {
                 end = i as u32 + c.len_utf8() as u32;
                 if c == '\n' {
                     // Check if next line starts with ##
-                    let remaining = &self.source[i as usize + 1..];
+                    let remaining = &self.source[i + 1..];
                     if !remaining.starts_with("##") {
                         break;
                     }
@@ -659,7 +654,7 @@ impl<'a> Lexer<'a> {
                 end = i as u32 + c.len_utf8() as u32;
                 if c == '"' {
                     // Check if next two chars are also quotes (closing """)
-                    let remaining = &self.source[i as usize..];
+                    let remaining = &self.source[i..];
                     if remaining.starts_with("\"\"\"") {
                         // Found closing """
                         break;
@@ -686,7 +681,7 @@ impl<'a> Lexer<'a> {
         } else if raw {
             let mut end = start;
             // Raw strings end at the first unescaped quote
-            while let Some((i, c)) = self.chars.next() {
+            for (i, c) in self.chars.by_ref() {
                 end = i as u32 + c.len_utf8() as u32;
                 if c == '"' {
                     break;
@@ -825,20 +820,17 @@ impl<'a> Lexer<'a> {
             '\'' => self.read_char(start),
             '"' => {
                 let src_bytes = self.source.as_bytes();
-                if i as usize + 2 < src_bytes.len() {
-                    if src_bytes[i as usize + 1] == b'"' && src_bytes[i as usize + 2] == b'"' {
-                        self.chars.next();
-                        self.chars.next();
-                        self.offset = i as u32 + 3;
-                        return Some(self.read_string(start, false, true));
-                    }
+                if i + 2 < src_bytes.len() && src_bytes[i + 1] == b'"' && src_bytes[i + 2] == b'"' {
+                    self.chars.next();
+                    self.chars.next();
+                    self.offset = i as u32 + 3;
+                    return Some(self.read_string(start, false, true));
                 }
                 self.read_string(start, false, false)
             }
             'a'..='z' | 'A'..='Z' | '_' => {
                 let src_bytes = self.source.as_bytes();
-                if c == 'r' && i as usize + 1 < src_bytes.len() && src_bytes[i as usize + 1] == b'"'
-                {
+                if c == 'r' && i + 1 < src_bytes.len() && src_bytes[i + 1] == b'"' {
                     self.chars.next();
                     self.offset = i as u32 + 2;
                     return Some(self.read_string(start, true, false));
@@ -849,7 +841,7 @@ impl<'a> Lexer<'a> {
             _ => self.read_operator(start, c),
         };
 
-        return Some(token);
+        Some(token)
     }
 
     /// Get pending indent events (for testing)
@@ -1364,7 +1356,6 @@ mod tests {
         let source = "proc foo = echo 1 +\\\n  2";
         let tokens = tokenize_all(source);
         // Should not produce indent after the continuation
-        let kinds: Vec<_> = tokens.iter().map(|t| t.kind).collect();
         // The lexer should handle this without panic
         assert!(!tokens.is_empty());
     }

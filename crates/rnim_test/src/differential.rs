@@ -3,7 +3,7 @@
 //! This module provides infrastructure for running the same source through both
 //! chimera-nim and official Nim, then comparing the outputs.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Result of a differential test comparison
@@ -133,6 +133,7 @@ pub fn find_official_nim() -> Option<PathBuf> {
 }
 
 /// Get Nim version string
+#[allow(dead_code)]
 fn get_nim_version(nim_path: &PathBuf) -> Result<String, String> {
     let output = Command::new(nim_path)
         .arg("--version")
@@ -176,7 +177,8 @@ impl DifferentialRunner {
     }
 
     /// Run a single differential test
-    pub fn run_test(&self, source: &PathBuf) -> DifferentialResult {
+    #[allow(dead_code)]
+    pub fn run_test(&self, _source: &Path) -> DifferentialResult {
         // For now, return a placeholder result
         // Full implementation would compile with both compilers and compare
         DifferentialResult {

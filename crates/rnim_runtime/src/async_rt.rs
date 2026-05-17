@@ -3,7 +3,7 @@
 //! This module provides runtime support for async procedures and futures.
 
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicBool, AtomicPtr, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 
 /// Future state
@@ -160,7 +160,7 @@ impl AsyncRuntime {
     }
 
     /// Spawn a task on the runtime
-    pub fn spawn<F>(&mut self, future: F) -> AsyncJoinHandle<F::Output>
+    pub fn spawn<F>(&mut self, _future: F) -> AsyncJoinHandle<F::Output>
     where
         F: std::future::Future + Send + 'static,
         F::Output: Send,
@@ -332,12 +332,12 @@ where
 
 /// Select from multiple futures
 pub struct SelectAll<F> {
-    futures: Vec<F>,
+    _futures: Vec<F>,
 }
 
 impl<F> SelectAll<F> {
     pub fn new(futures: Vec<F>) -> Self {
-        SelectAll { futures }
+        SelectAll { _futures: futures }
     }
 }
 
@@ -374,8 +374,7 @@ mod tests {
 
     #[test]
     fn test_async_task_failed() {
-        let task: AsyncTask<i32> =
-            AsyncTask::failed(std::io::Error::new(std::io::ErrorKind::Other, "test"));
+        let task: AsyncTask<i32> = AsyncTask::failed(std::io::Error::other("test"));
         assert!(task.is_failed());
         assert!(!task.is_ready());
         assert!(task.get().unwrap().as_ref().is_err());
@@ -425,8 +424,7 @@ mod tests {
     #[test]
     fn test_sleep_new() {
         let sleep = Sleep::new(std::time::Duration::from_secs(1));
-        // Just verify it can be created
-        assert!(true);
+        assert!(!sleep.remaining.is_zero());
     }
 
     #[test]
@@ -440,7 +438,7 @@ mod tests {
     fn test_select_all_new() {
         let futures: Vec<AsyncResult<i32>> = vec![AsyncResult::new()];
         let select = SelectAll::new(futures);
-        assert_eq!(select.futures.len(), 1);
+        assert_eq!(select._futures.len(), 1);
     }
 
     #[test]
@@ -451,6 +449,6 @@ mod tests {
         let task = Box::into_raw(Box::new(AsyncTask::<i32>::new()));
         let handle = AsyncJoinHandle::new(task);
         assert!(!handle.is_ready());
-        unsafe { Box::from_raw(task) };
+        unsafe { drop(Box::from_raw(task)) };
     }
 }

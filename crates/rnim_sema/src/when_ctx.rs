@@ -56,6 +56,7 @@ pub enum DefinedValue {
 
 /// Conditional compilation evaluator
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct WhenCtx {
     /// User-defined symbols
     symbols: HashMap<String, DefinedValue>,
@@ -319,7 +320,7 @@ pub fn eval_ct_expr(expr: &CtfeExpr) -> Result<CtfeValue, String> {
                 _ => Err("Invalid type for neg".to_string()),
             }
         }
-        CtfeExpr::Ident(name) => {
+        CtfeExpr::Ident(_name) => {
             // For now, treat identifiers as integers for compile-time constants
             // A full implementation would look up symbol tables
             Ok(CtfeValue::Integer(0))

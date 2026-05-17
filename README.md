@@ -54,6 +54,35 @@ cargo run -p xtask -- test
 - Architecture overview: `docs/design/index.md`
 - Detailed subsystem notes: `docs/design/`
 
+## ChimeraIR Binary Builds
+
+This repo does not currently carry the ChimeraIR manifests for the three binary
+variants. The current build surface for those binaries lives in
+`../chimera-beam`, using the shared `chimera` CLI from
+`../chimerair/tools`.
+
+Build the CLI first:
+
+```bash
+cd ../chimerair/tools
+cargo build --release -p chimera-cli
+```
+
+Then build the three binary variants from `chimera-beam`:
+
+```bash
+HOST_TRIPLE=x86_64-unknown-linux-gnu
+CHIMERA=../chimerair/tools/target/release/chimera
+
+cd ../chimera-beam
+"$CHIMERA" build --manifest Chimera.toml --target "$HOST_TRIPLE" --output ./build-abi
+"$CHIMERA" build --manifest Chimera.adapter.toml --target "$HOST_TRIPLE" --output ./build-adapter
+"$CHIMERA" build --manifest Chimera.separate.toml --target "$HOST_TRIPLE" --output ./build-semantic
+```
+
+The resulting executables are emitted as `build-abi/chimera_binary`,
+`build-adapter/chimera_binary`, and `build-semantic/chimera_binary`.
+
 ## License
 
 This project is licensed under the 0BSD license. See `LICENSE`.

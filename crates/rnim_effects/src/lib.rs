@@ -1,5 +1,7 @@
 //! Exception/effect tracking, tags, `raises`, `gcsafe`, side-effect validation.
 
+#![allow(clippy::match_single_binding, unused_imports)]
+
 use bitflags::bitflags;
 #[cfg(test)]
 use rnim_allocator as _;
@@ -487,7 +489,7 @@ mod tests {
         let mut actual = EffectSet::new();
         actual.add_raise(EffectType::IOError);
 
-        let mut expected = ExpectedEffects::new();
+        let expected = ExpectedEffects::new();
         // Only expect ValueError
 
         let validation = checker.validate_effects(&actual, &expected, true);
@@ -710,7 +712,7 @@ mod tests {
 
     #[test]
     fn test_forbidden_effect_matching() {
-        let forbidden = ForbiddenEffect::Raises(EffectType::ValueError);
+        let _forbidden = ForbiddenEffect::Raises(EffectType::ValueError);
 
         let mut effects = EffectSet::new();
         effects.add_raise(EffectType::ValueError);

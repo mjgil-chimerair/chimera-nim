@@ -7,7 +7,7 @@ use rnim_span::Span;
 use std::collections::HashMap;
 
 /// Conversion rank - how preferred is this conversion
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum ConversionRank {
     /// Exact match, no conversion needed
     Exact,
@@ -22,13 +22,8 @@ pub enum ConversionRank {
     /// Conversion through converter chain
     UserDefinedChain,
     /// Invalid/illegal conversion
+    #[default]
     Invalid,
-}
-
-impl Default for ConversionRank {
-    fn default() -> Self {
-        ConversionRank::Invalid
-    }
 }
 
 /// A registered converter
@@ -122,14 +117,10 @@ impl ConversionGraph {
             .any(|k| k.starts_with(&converter_key))
         {
             // Check if it's explicit only
-            let full_key = format!("{}:{}->", from, to);
-            for (_, conv) in &self.converters {
+            let _full_key = format!("{}:{}->", from, to);
+            for conv in self.converters.values() {
                 if conv.from_type == from && conv.to_type == to {
-                    return if conv.is_explicit {
-                        ConversionRank::UserDefined
-                    } else {
-                        ConversionRank::UserDefined
-                    };
+                    return ConversionRank::UserDefined;
                 }
             }
         }
@@ -201,7 +192,7 @@ impl ConversionGraph {
             }
 
             // Try converters
-            for (key, conv) in &self.converters {
+            for conv in self.converters.values() {
                 if conv.from_type == *current && !visited.contains(&conv.to_type) {
                     visited.insert(conv.to_type.clone());
                     let mut new_path = path.clone();

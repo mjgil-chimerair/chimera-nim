@@ -311,8 +311,9 @@ pub struct Field {
 }
 
 /// Calling convention for procedures
-#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
+#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, Default)]
 pub enum CallingConvention {
+    #[default]
     Nimcall,
     Cdecl,
     Stdcall,
@@ -322,12 +323,6 @@ pub enum CallingConvention {
     Fastcall,
     Thiscall,
     Pascal,
-}
-
-impl Default for CallingConvention {
-    fn default() -> Self {
-        CallingConvention::Nimcall
-    }
 }
 
 /// Type context for interning and managing types
@@ -691,8 +686,8 @@ mod tests {
         assert!(matches!(LiteralValue::Int(42), LiteralValue::Int(42)));
         assert!(matches!(LiteralValue::Uint(42), LiteralValue::Uint(42)));
         assert!(matches!(
-            LiteralValue::Float(3.14),
-            LiteralValue::Float(3.14)
+            LiteralValue::Float(std::f64::consts::PI),
+            LiteralValue::Float(std::f64::consts::PI)
         ));
         let s = LiteralValue::String("hello".into());
         assert!(matches!(s, LiteralValue::String(_)));

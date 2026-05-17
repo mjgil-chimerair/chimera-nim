@@ -3,6 +3,7 @@
 use camino::Utf8Path;
 #[cfg(test)]
 use rnim_allocator as _;
+#[allow(unused_imports)]
 use rnim_mir::{
     BasicBlock, BinOp, CmpOp, Function, FunctionAttribute, GotoTarget, Local, MirBody, MirModule,
     MirStmt, MirType, MirValue, NodeIndex, Place, Terminator, UnOp,
@@ -23,8 +24,9 @@ pub struct JsCodegenConfig {
     pub async_support: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum JsRuntime {
+    #[default]
     Node,
     Browser,
     Standalone,
@@ -38,12 +40,6 @@ impl Default for JsCodegenConfig {
             runtime: JsRuntime::Node,
             async_support: true,
         }
-    }
-}
-
-impl Default for JsRuntime {
-    fn default() -> Self {
-        JsRuntime::Node
     }
 }
 
@@ -68,6 +64,7 @@ impl JsModule {
 }
 
 /// JavaScript code generator
+#[allow(dead_code)]
 pub struct JsCodeGenerator {
     config: JsCodegenConfig,
     output: String,
@@ -76,6 +73,7 @@ pub struct JsCodeGenerator {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct SourceMapEntry {
     pub generated_line: usize,
     pub generated_col: usize,
@@ -110,6 +108,7 @@ impl JsCodeGenerator {
         self.newline();
     }
 
+    #[allow(dead_code)]
     fn emit_type(&self, ty: &MirType) -> String {
         match ty {
             MirType::Unit => "undefined".to_string(),
@@ -593,9 +592,7 @@ impl JsCodeGenerator {
         if !self.config.source_map {
             return None;
         }
-        Some(format!(
-            "{{\"version\": 3, \"sources\": [], \"mappings\": \"\"}}"
-        ))
+        Some("{\"version\": 3, \"sources\": [], \"mappings\": \"\"}".to_string())
     }
 
     pub fn emit_js(&mut self, module: &MirModule) -> JsModule {
@@ -667,64 +664,64 @@ mod tests {
     #[test]
     fn test_emit_type_bool() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Bool), "boolean");
+        let r#gen = JsCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Bool), "boolean");
     }
 
     #[test]
     fn test_emit_type_int() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Int(32)), "number");
+        let r#gen = JsCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Int(32)), "number");
     }
 
     #[test]
     fn test_emit_type_string() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::String), "string");
+        let r#gen = JsCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::String), "string");
     }
 
     #[test]
     fn test_emit_type_unit() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
-        assert_eq!(gen.emit_type(&MirType::Unit), "undefined");
+        let r#gen = JsCodeGenerator::new(config);
+        assert_eq!(r#gen.emit_type(&MirType::Unit), "undefined");
     }
 
     #[test]
     fn test_emit_value_bool() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
-        assert_eq!(gen.emit_value(&MirValue::Bool(true, span)), "true");
-        assert_eq!(gen.emit_value(&MirValue::Bool(false, span)), "false");
+        assert_eq!(r#gen.emit_value(&MirValue::Bool(true, span)), "true");
+        assert_eq!(r#gen.emit_value(&MirValue::Bool(false, span)), "false");
     }
 
     #[test]
     fn test_emit_value_int() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
-        assert_eq!(gen.emit_value(&MirValue::Int(42, span)), "42");
-        assert_eq!(gen.emit_value(&MirValue::Int(-10, span)), "-10");
+        assert_eq!(r#gen.emit_value(&MirValue::Int(42, span)), "42");
+        assert_eq!(r#gen.emit_value(&MirValue::Int(-10, span)), "-10");
     }
 
     #[test]
     fn test_emit_value_uint() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
-        assert_eq!(gen.emit_value(&MirValue::Uint(100, span)), "100");
+        assert_eq!(r#gen.emit_value(&MirValue::Uint(100, span)), "100");
     }
 
     #[test]
     fn test_emit_value_string() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         assert_eq!(
-            gen.emit_value(&MirValue::String("hello".to_string(), span)),
+            r#gen.emit_value(&MirValue::String("hello".to_string(), span)),
             "\"hello\""
         );
     }
@@ -732,7 +729,7 @@ mod tests {
     #[test]
     fn test_emit_value_binop() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         let expr = MirValue::BinOp(
             BinOp::Add,
@@ -740,22 +737,22 @@ mod tests {
             Box::new(MirValue::Int(3, span)),
             span,
         );
-        assert_eq!(gen.emit_value(&expr), "(2 + 3)");
+        assert_eq!(r#gen.emit_value(&expr), "(2 + 3)");
     }
 
     #[test]
     fn test_emit_value_unop() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         let expr = MirValue::UnOp(UnOp::Neg, Box::new(MirValue::Int(5, span)), span);
-        assert_eq!(gen.emit_value(&expr), "(-5)");
+        assert_eq!(r#gen.emit_value(&expr), "(-5)");
     }
 
     #[test]
     fn test_emit_value_comparison() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         let expr = MirValue::Comparison(
             CmpOp::Eq,
@@ -763,22 +760,22 @@ mod tests {
             Box::new(MirValue::Int(20, span)),
             span,
         );
-        assert_eq!(gen.emit_value(&expr), "(10 === 20)");
+        assert_eq!(r#gen.emit_value(&expr), "(10 === 20)");
     }
 
     #[test]
     fn test_emit_value_array() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         let arr = MirValue::Array(vec![MirValue::Int(1, span), MirValue::Int(2, span)], span);
-        assert_eq!(gen.emit_value(&arr), "[1, 2]");
+        assert_eq!(r#gen.emit_value(&arr), "[1, 2]");
     }
 
     #[test]
     fn test_emit_value_tuple() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let span = Span::new(FileId(0), 0, 0);
         let tuple = MirValue::Tuple(
             vec![
@@ -787,13 +784,13 @@ mod tests {
             ],
             span,
         );
-        assert_eq!(gen.emit_value(&tuple), "[1, \"hi\"]");
+        assert_eq!(r#gen.emit_value(&tuple), "[1, \"hi\"]");
     }
 
     #[test]
     fn test_emit_js_with_function() {
         let config = JsCodegenConfig::default();
-        let mut gen = JsCodeGenerator::new(config);
+        let mut r#gen = JsCodeGenerator::new(config);
 
         let span = Span::new(FileId(0), 0, 0);
         let entry = NodeIndex::new(0);
@@ -819,7 +816,7 @@ mod tests {
             source_span: span,
         };
 
-        let result = gen.emit_js(&module);
+        let result = r#gen.emit_js(&module);
 
         assert!(result.source.contains("function add(p_0, p_1)"));
         assert!(result.source.contains("block_0"));
@@ -829,7 +826,7 @@ mod tests {
     #[test]
     fn test_emit_js_with_empty_module() {
         let config = JsCodegenConfig::default();
-        let mut gen = JsCodeGenerator::new(config);
+        let mut r#gen = JsCodeGenerator::new(config);
 
         let module = MirModule {
             name: "empty".to_string(),
@@ -838,7 +835,7 @@ mod tests {
             source_span: Span::new(FileId(0), 0, 0),
         };
 
-        let result = gen.emit_js(&module);
+        let result = r#gen.emit_js(&module);
 
         assert!(result.source.contains("RNIM_UNIT"));
         assert!(result.source.contains("RNIM_STRING"));
@@ -848,9 +845,9 @@ mod tests {
     #[test]
     fn test_emit_type_array() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         assert_eq!(
-            gen.emit_type(&MirType::Array(Box::new(MirType::Int(32)), 10)),
+            r#gen.emit_type(&MirType::Array(Box::new(MirType::Int(32)), 10)),
             "Array<number>"
         );
     }
@@ -858,12 +855,12 @@ mod tests {
     #[test]
     fn test_emit_type_proc() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let proc_type = MirType::Proc(
             vec![MirType::Int(32), MirType::Int(32)],
             Box::new(MirType::Int(32)),
         );
-        let result = gen.emit_type(&proc_type);
+        let result = r#gen.emit_type(&proc_type);
         assert!(result.contains("function"));
         assert!(result.contains("number"));
     }
@@ -871,7 +868,7 @@ mod tests {
     #[test]
     fn test_emit_type_adt() {
         let config = JsCodegenConfig::default();
-        let gen = JsCodeGenerator::new(config);
+        let r#gen = JsCodeGenerator::new(config);
         let adt_type = MirType::Adt(
             "MyStruct".to_string(),
             vec![
@@ -879,7 +876,7 @@ mod tests {
                 ("field2".to_string(), MirType::Bool),
             ],
         );
-        assert_eq!(gen.emit_type(&adt_type), "MyStruct");
+        assert_eq!(r#gen.emit_type(&adt_type), "MyStruct");
     }
 
     #[test]
